@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Comparing Flows</title>
+  
+  <link rel="apple-touch-icon" sizes="180x180" href="https://cdn.openmindmap.org/content/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://cdn.openmindmap.org/content/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.openmindmap.org/content/favicon-16x16.png">
+  <link rel="manifest" href="https://blog.openmindmap.org/f/site.webmanifest">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.openmindmap.org/embed/jquery-3.7.0.min.js" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.openmindmap.org/embed/flowviewer.js" crossorigin="anonymous" referrerpolicy="no-referrer">
+  </script>
+  <link rel="stylesheet" href="https://cdn.openmindmap.org/embed/flowviewer.css">
+  <style>
+    .flow-description-text {
+  font-family: monospace;
+  font-size: 30px;
+  dominant-baseline: middle;
+}
+
+.deleted {
+  fill: rgb(120, 68, 68);
+  fill-opacity: 0.2;
+  stroke: black;
+  stroke-width: 2px;
+}
+.added {
+  fill: rgb(64, 166, 98);
+  fill-opacity: 0.4;
+  stroke: rgb(10, 255, 23);
+  stroke-width: 4px;
+}
+.changed {
+  fill: rgb(126, 97, 208);
+  fill-opacity: 0.6;
+  stroke: rgb(229, 0, 156);
+  stroke-width: 3px;
+}
+.moved {
+  fill: rgb(210, 251, 89);
+  fill-opacity: 0.3;
+  stroke: rgb(0, 50, 249);
+  stroke-width: 3px;
+}
+
+#diff-viewer{
+  overflow:auto;
+  background-color:rgb(244, 244, 244);
+  border: 2px solid #000;
+  width:80%;
+  height:70%;
+  display:none;
+  position:fixed;
+  top:55%;
+  left:50%;
+  margin:-30% 0 0 -40%;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.parentDisable{
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: none;
+  background: #000;
+  opacity: 0.4;
+  z-index: 998;
+  height: 100%;
+  width: 100%;
+}
+
+.dv-differ {
+  background-color: rgba(244, 170, 23, 0.476);
+}
+
+.dv-removed {
+  background-color: rgb(203, 203, 38);
+}
+
+.dv-added {
+  background-color: rgb(86, 222, 120);
+}
+
+.dv-pre-elem {
+    page-break-inside: avoid;
+    font-family: monospace;
+    max-width: 100%;
+    overflow: auto;
+    display: block;
+    word-wrap: break-word;
+    margin: 0px !important;
+}
+  </style>
+</head>
+
+<body id="body" class="body">
+  <h2>Compare two flows visually. Paste flows to compare here.</h2>
+  
+  <table border=1>
+    <thead>
+      <tr>
+        <th>Flow1</th>
+        <th>Flow2</th>
+      </tr>
+    </thead>
+    <tbody id="tbody">
+      <tr>
+        <td><input type='textbox' id='flow1' style="width: 200px; height: 100px;"></input></td>
+        <td><input type='textbox' id='flow2' style="width: 200px; height: 100px;"></input></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <input id="comparebutton" type="button" name="Compare" value="Compare"/>
+  <input id="createurl" type="button" name="Create URL" value="Create URL"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <input id="clear" type="button" name="Clear" value="Clear"/>
+</body>
+
+
+<script id="template" style="display: none" type="text/html">
+<div style="position: fixed; top: 10; left: 10; z-index: 10;">
+  Slide between commits:
+  <input style="width: 300px" id="slider" type="range" min="0" max="1" step="1" value="0"></input>
+  Select flow tab to compare:
+  <select id="flowSelector"></select>
+</div>
+
+<div id='svgcontainer'
+  style="transform: scale(0.5,0.5) translate(-2500px,-2500px) ; top: 50px; left: 10px; position: absolute; overflow: scroll; display: block; z-index: 0;">
+
+  <svg id="svgelem" width="5000" height="5000" viewBox="0 0 5000 5000" pointer-events="all" style="cursor: crosshair;"
+    version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <!-- Use group elems to ensure that layering of shapes is correct, i.e. nodes always over links -->
+    <g class='container-gridlines'>
+      <g class='flowGridlines'></g>
+    </g>
+
+    <g class='container-diff0'>
+      <g class='flowGridlines' style="display: none;"></g>
+      <g class="flowDescription"></g>
+      <g class='flowGroups'></g>
+      <g class='flowWires'></g>
+      <g class='flowNodes'></g>
+    </g>
+    <g class='container-diff1'>
+      <g class='flowGridlines' style="display: none;"></g>
+      <g class="flowDescription"></g>
+      <g class='flowGroups'></g>
+      <g class='flowWires'></g>
+      <g class='flowNodes'></g>
+    </g>
+  </svg>
+</div>
+
+<div class="parentDisable" onclick="$('#diff-viewer').hide(); $('.parentDisable').hide(); return false;"></div>
+<div id="diff-viewer">
+  <a href="#" onclick="$('#diff-viewer').hide(); $('.parentDisable').hide(); return false;">close</a>
+
+  <p>
+  <i style="font-size: 80%;">Element</i>
+  <table border="1">
+    <tr>
+      <th>Name</th>
+      <td id="dv-nde-name"></td>
+    </tr>
+    <tr>
+      <th>Type</th>
+      <td id="dv-nde-type"></td>
+    </tr>  
+    <tr>
+      <th>Id</th>
+      <td id="dv-nde-id"></td>
+    </tr>
+  </table>
+
+  <p>
+  <i style="font-size: 80%;">Comparison</i>
+  <table border="1">
+    <thead>
+    <tr>
+      <th>AttrName</th>
+      <th><code style="font-size:80%;" id="dv-nde1-sha"></code> <a id="dv-nde1-copy" href="#" onclick="copyToClipboard(this); return false;">[EX]</a></th>
+      <th><code style="font-size:80%;" id="dv-nde2-sha"></code> <a id="dv-nde2-copy" href="#" onclick="copyToClipboard(this); return false;">[EX]</a></th>
+    </tr>
+    </thead>
+    <tbody id="dv-details">
+    </tbody>
+  </table>
+</div>
+
+</script>
+
+<script>
+  var releasesMetaData = undefined;
+  var comparingVersions = [];
+  var allFlows = undefined;
+  var uniqFlowIds = {};
+
+  var entityMap = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+  '/': '&#x2F;',
+  '`': '&#x60;',
+  '=': '&#x3D;'
+};
+
+var descMap = {
+  'z': "Flow Tab Id",
+  'g': "Group Id",
+  'd': "Disabled",
+};
+
+function escapeHtml(string) {
+  return String(string).replace(/[&<>"'`=\/]/g, function fromEntityMap(s) {
+    return entityMap[s];
+  });
+}
+
+function onChangeSelector(e) {
+  e.preventDefault();
+
+  var flowId = $('#flowSelector').val();
+
+  for (var idx = 0; idx < allFlows.length; idx++) {
+    var svgjQueryObj = $($('#svgelem .container-diff' + idx)[0]);
+
+    ["flowNodes", "flowGroups", "flowWires", "flowGridlines"].forEach(function (cls) {
+      $(svgjQueryObj.find('.' + cls)[0]).html("");
+    });
+
+    renderFlowIdForIdx(flowId, idx)
+    updateWithDiffData()
+  }
+}
+
+function getCommitMetadata(queryString, cb) {
+  $.ajax({
+    dataType: "json",
+    url: "/commits.json" + queryString,
+    method: 'get',
+    success: function (vdata) {
+      releasesMetaData = vdata.metadata;
+      cb(vdata);
+    }
+  });
+}
+
+function getAllCommits() {
+  getCommitMetadata("", (vdata) => {
+    $('#tbody').html(vdata.html)
+  });
+}
+
+function copyToClipboard(elem) {
+  copyTextToClipboard($(elem).data('json'), () => {
+    alert( 'Exported version ' + $(elem).data('commit') + " of element.\n\nElement can now be imported into Node-RED.\n")
+  });
+}
+
+function attrDesc(nme) {
+  return descMap[nme] ? " <i style='font-size: 80%;'>(" + descMap[nme] + ")</i>" : "";
+}
+
+function showDiffPopup(ndeV1, shaV1, ndeV2, shaV2) {
+  $('.parentDisable').show();
+  $('#diff-viewer').show();
+
+  $('#dv-nde-name').html(ndeV1.name);
+  $('#dv-nde-type').html(ndeV1.type);
+  $('#dv-nde-id').html(ndeV1.id);
+  $('#dv-nde1-sha').html(shaV1);
+  $('#dv-nde2-sha').html(shaV2);
+  
+  $('#dv-details').html("");
+
+  Object.keys(ndeV2).forEach(function (nme) {
+    if ( Object.keys(ndeV1).indexOf(nme) < 0 ) {
+      $('#dv-details').append("<tr class='dv-removed'><th>" + nme + attrDesc(nme) + "</th><td><i>MISSING</i></td><td><code>" + escapeHtml(ndeV2[nme]) + "</code></td></tr>")
+    }
+  });
+
+  Object.keys(ndeV1).forEach(function (nme) {
+    if (Object.keys(ndeV2).indexOf(nme) < 0) {
+      $('#dv-details').append("<tr class='dv-added'><th>" + nme + attrDesc(nme) + "</th><td><code>" + escapeHtml(ndeV1[nme]) +"</code></td><td><i>ADDED</i></td></tr>")
+    }
+  });
+
+  Object.keys(ndeV1).forEach(function (nme) {
+    if (Object.keys(ndeV2).indexOf(nme) > -1) {
+
+      var cls = (JSON.stringify(ndeV1[nme]) !== JSON.stringify(ndeV2[nme]) ? "dv-differ" : "")
+
+      if ( cls == "dv-differ") {
+        let span = null;
+
+        let diff = undefined;
+
+        try {
+          diff = Diff.diffLines(ndeV2[nme], ndeV1[nme])
+        } catch (e) {
+          diff = Diff.diffLines(JSON.stringify(ndeV2[nme]), JSON.stringify(ndeV1[nme]))
+        }
+        const fragment = document.createDocumentFragment();
+
+        diff.forEach((part) => {
+          // green for additions, red for deletions
+          const color = part.added ? 'green' : part.removed ? 'red' : '#040506';
+
+          span = document.createElement('pre');
+          span.setAttribute('class','dv-pre-elem');
+          span.style.color = color;
+          span.appendChild(document.createTextNode(part.value));
+          span.appendChild(document.createElement('br'));
+          fragment.appendChild(span);
+        });
+
+        var row = document.createElement('tr');
+        row.setAttribute('class',cls)
+        var cell = document.createElement('th')
+        cell.appendChild(document.createTextNode(nme))
+        if (descMap[nme]) {
+          var itl = document.createElement('i');
+          itl.style["font-size"] = "80%"
+          itl.appendChild(document.createTextNode("(" + descMap[nme]+")"))
+          cell.appendChild(itl)
+        }
+        row.append(cell);
+
+        cell = document.createElement('td')
+        cell.setAttribute('colspan', '2')
+        cell.append( fragment)
+
+        row.append(cell)
+        $('#dv-details').append(row)
+      } else {
+        $('#dv-details').append("<tr class='" + cls + "'><th>" + nme + "</th><td><code>" + escapeHtml(ndeV1[nme]) + "</code></td><td><code>" + escapeHtml(ndeV2[nme]) + "</code></td></tr>")
+      }
+
+    }
+  });
+
+
+  $('#dv-nde1-copy').data('json', JSON.stringify([ndeV1]));
+  $('#dv-nde1-copy').data('commit', shaV1);
+
+  $('#dv-nde2-copy').data('json', JSON.stringify([ndeV2]));
+  $('#dv-nde2-copy').data('commit', shaV2);
+}
+
+function setupSlider() {
+  var slider = document.getElementById("slider");
+
+  slider.oninput = function () {
+    var idx = Math.floor(this.value / 100);
+    var nValue = (this.value - (100 * idx));
+
+    for (var jdx = 0; jdx < idx; jdx++) { $('.container-diff' + jdx).css('opacity', 0); }
+    for (var jdx = idx + 2; jdx < allFlows.length; jdx++) { $('.container-diff' + jdx).css('opacity', 0); }
+
+    $('.container-diff' + idx).css('opacity', (100 - nValue) / 100)
+    $('.container-diff' + (idx + 1)).css('opacity', nValue / 100)
+  }
+
+  $('#slider').val(0);
+  $('#slider').prop("max", 100 * (allFlows.length - 1));
+}
+
+function waitingForGodot() {
+  var allTouts = [];
+  var setTout = (f, tt) => { allTouts.push(setTimeout(f, tt)) };
+
+  /* 
+   * done for the eyeball rolls - yes this is extra done this way, for the shits and giggles 
+   */
+  $('#body').html("Please wait ... system thinking")
+
+setTout(() => { $('#body').html("Please wait ... system thinking.") }, 100);
+setTout(() => { $('#body').html("Please wait ... system thinking..") }, 200);
+setTout(() => { $('#body').html("Please wait ... system thinking...") }, 300);
+setTout(() => { $('#body').html("Please wait ... system thinking..") }, 400);
+setTout(() => { $('#body').html("Please wait ... system thinking.") }, 500);
+setTout(() => { $('#body').html("Please wait ... system thinking") }, 600);
+setTout(() => { $('#body').html("Please wait ... system thinkin") }, 700);
+setTout(() => { $('#body').html("Please wait ... system thinki") }, 800);
+setTout(() => { $('#body').html("Please wait ... system think") }, 900);
+setTout(() => { $('#body').html("Please wait ... system thin") }, 1000);
+setTout(() => { $('#body').html("Please wait ... system thi") }, 1100);
+setTout(() => { $('#body').html("Please wait ... system th") }, 1200);
+setTout(() => { $('#body').html("Please wait ... system t") }, 1300);
+setTout(() => { $('#body').html("Please wait ... system ") }, 1400);
+setTout(() => { $('#body').html("Please wait ... system") }, 1500);
+setTout(() => { $('#body').html("Please wait ... syste") }, 1600);
+setTout(() => { $('#body').html("Please wait ... syst") }, 1700);
+setTout(() => { $('#body').html("Please wait ... sys") }, 1800);
+setTout(() => { $('#body').html("Please wait ... sy") }, 1900);
+setTout(() => { $('#body').html("Please wait ... s") }, 2000);
+setTout(() => { $('#body').html("Please wait ... ") }, 2100);
+setTout(() => { $('#body').html("Please wait ...") }, 2200);
+setTout(() => { $('#body').html("Please wait ..") }, 2300);
+setTout(() => { $('#body').html("Please wait .") }, 2400);
+setTout(() => { $('#body').html("Please wait ") }, 2500);
+setTout(() => { $('#body').html("Please wait") }, 2600);
+setTout(() => { $('#body').html("Please wai") }, 2700);
+setTout(() => { $('#body').html("Please wa") }, 2800);
+setTout(() => { $('#body').html("Please w") }, 2900);
+setTout(() => { $('#body').html("Please ") }, 3000);
+setTout(() => { $('#body').html("Please") }, 3100);
+setTout(() => { $('#body').html("Pleas") }, 3200);
+setTout(() => { $('#body').html("Plea") }, 3300);
+setTout(() => { $('#body').html("Ple") }, 3400);
+setTout(() => { $('#body').html("Pl") }, 3500);
+setTout(() => { $('#body').html("P") }, 3600);
+setTout(() => { $('#body').html("") }, 3700);
+setTout(() => { $('#body').html("P") }, 3800);
+setTout(() => { $('#body').html("Pu") }, 3900);
+setTout(() => { $('#body').html("Puf") }, 4000);
+setTout(() => { $('#body').html("Puff") }, 4100);
+setTout(() => { $('#body').html("Puff W") }, 4200);
+setTout(() => { $('#body').html("Puff Wh") }, 4300);
+setTout(() => { $('#body').html("Puff Wha") }, 4400);
+setTout(() => { $('#body').html("Puff What") }, 4500);
+setTout(() => { $('#body').html("Puff What ") }, 4600);
+setTout(() => { $('#body').html("Puff What i") }, 4700);
+setTout(() => { $('#body').html("Puff What is") }, 4800);
+setTout(() => { $('#body').html("Puff What is ") }, 4900);
+setTout(() => { $('#body').html("Puff What is g") }, 5000);
+setTout(() => { $('#body').html("Puff What is go") }, 5100);
+setTout(() => { $('#body').html("Puff What is goi") }, 5200);
+setTout(() => { $('#body').html("Puff What is goin") }, 5300);
+setTout(() => { $('#body').html("Puff What is going") }, 5400);
+setTout(() => { $('#body').html("Puff What is going ") }, 5500);
+setTout(() => { $('#body').html("Puff What is going o") }, 5600);
+setTout(() => { $('#body').html("Puff What is going on") }, 5700);
+setTout(() => { $('#body').html("Puff What is going on?") }, 5800);
+setTout(() => { $('#body').html("Puff What is going on!?") }, 6000);
+setTout(() => { $('#body').html("Puff What is going on?!?") }, 6300);
+setTout(() => { $('#body').html("Puff What is going on!?!?") }, 6700);
+setTout(() => { $('#body').html("Puff What is going on?!?!?") }, 7200);
+setTout(() => { $('#body').html("Puff What is going on!?!?!?") }, 7700);
+setTout(() => { $('#body').html("Puff What is going on?!?!?!?") }, 8300);
+
+
+  return allTouts;
+}
+
+function renderFlowIdForIdx(flowId, idx) {
+  renderFlow(flowId, allFlows[idx].flowdata, $($('#svgelem .container-diff' + idx)[0]), {
+    "arrows": false,
+    "gridlines": false,
+    "zoom": true, /* does not have any affect */
+    "images": true,
+    "linklines": false,
+    "dllink": false,
+    "labels": true,
+  });
+}
+
+/* Taken from
+   https://github.com/node-red/node-red/blob/e7b27ce7fb78f02591d1c97e4216be075c7973fd/packages/node_modules/@node-red/editor-client/src/js/ui/diff.js#L1108
+*/
+function parseNodes(nodeList) {
+  var tabOrder = [];
+  var tabs = {};
+  var subflows = {};
+  var globals = [];
+  var all = {};
+
+  nodeList.forEach(function (node) {
+    all[node.id] = node;
+    if (node.type === 'tab') {
+      tabOrder.push(node.id);
+      tabs[node.id] = { n: node, nodes: [] };
+    } else if (node.type === 'subflow') {
+      subflows[node.id] = { n: node, nodes: [] };
+    }
+  });
+
+  nodeList.forEach(function (node) {
+    if (node.type !== 'tab' && node.type !== 'subflow') {
+      if (tabs[node.z]) {
+        tabs[node.z].nodes.push(node);
+      } else if (subflows[node.z]) {
+        subflows[node.z].nodes.push(node);
+      } else {
+        globals.push(node);
+      }
+    }
+  });
+
+  return {
+    all: all,
+    tabOrder: tabOrder,
+    tabs: tabs,
+    subflows: subflows,
+    globals: globals
+  }
+}
+
+/* Taken from 
+   https://github.com/node-red/node-red/blob/e7b27ce7fb78f02591d1c97e4216be075c7973fd/packages/node_modules/@node-red/editor-client/src/js/ui/diff.js#L1145
+   and extended with tabHas
+*/
+function generateDiff(currentNodes, newNodes) {
+  var currentConfig = parseNodes(currentNodes);
+  var newConfig = parseNodes(newNodes);
+
+  var added = {};
+  var deleted = {};
+  var changed = {};
+  var moved = {};
+
+  var tabHas = {
+    changed: {},
+    added: {},
+    moved: {},
+    deleted: {}
+  };
+
+  Object.keys(currentConfig.all).forEach(function (id) {
+    var obj = currentConfig.all[id];
+
+    if (!newConfig.all.hasOwnProperty(id)) {
+      deleted[id] = true;
+      tabHas.deleted[obj.z] = true;
+
+    } else if (JSON.stringify(obj) !== JSON.stringify(newConfig.all[id])) {
+      tabHas.changed[obj.z] = true;
+
+      /* did x&y change or did something really change? */
+      var clnObj = { ...obj };
+      var clnCmp = { ...newConfig.all[id] };
+      
+      delete clnCmp.x;
+      delete clnCmp.y;
+      delete clnObj.x;
+      delete clnObj.y;
+      
+      /* these are group attributes that often change but are a visual change */
+      delete clnObj.w;
+      delete clnObj.h;
+      delete clnCmp.w;
+      delete clnCmp.h;
+
+      if (JSON.stringify(clnObj) !== JSON.stringify(clnCmp)) {
+        changed[id] = true;
+      } else {
+        moved[id] = true;
+      }
+
+      if (currentConfig.all[id].z !== newConfig.all[id].z) {
+        tabHas.moved[obj.z] = true;
+        moved[id] = true;
+      }
+    }
+  });
+
+  Object.keys(newConfig.all).forEach(function (id) {
+    if (!currentConfig.all.hasOwnProperty(id)) {
+      added[id] = true;
+      tabHas.added[newConfig.all[id].z] = true;
+    }
+  });
+
+  var diff = {
+    currentConfig: currentConfig,
+    newConfig: newConfig,
+    added: added,
+    deleted: deleted,
+    changed: changed,
+    moved: moved,
+    tabHas: tabHas
+  };
+
+  return diff;
+}
+
+function updateWithDiffData() {
+  if (allFlows.length != 2) { return undefined }
+
+  var diff = generateDiff(allFlows[1].flowdata, allFlows[0].flowdata);
+
+  Object.keys(diff.added).forEach((ndeId) => {
+    $('.node-' + ndeId).addClass('added');
+    $('.group-' + ndeId).addClass('added');
+  });
+
+  Object.keys(diff.changed).forEach((ndeId) => {
+    $('.node-' + ndeId).addClass('changed');
+    $('.node-' + ndeId).on('click', function(e) {
+      var nodeV1 = allFlows[1].flowdata.filter((n) => { return n.id == ndeId })[0];
+      var nodeV0 = allFlows[0].flowdata.filter((n) => { return n.id == ndeId })[0];
+
+      showDiffPopup(nodeV0, allFlows[0].sha, nodeV1, allFlows[1].sha);
+    });
+
+    $('.node-' + ndeId).siblings().on('click', function (e) {
+      var nodeV1 = allFlows[1].flowdata.filter((n) => { return n.id == ndeId })[0];
+      var nodeV0 = allFlows[0].flowdata.filter((n) => { return n.id == ndeId })[0];
+
+      showDiffPopup(nodeV0, allFlows[0].sha, nodeV1, allFlows[1].sha);
+    });
+
+    $('.group-' + ndeId).addClass('changed');
+    $('.group-' + ndeId).on('click', function (e) {
+      var nodeV1 = allFlows[1].flowdata.filter((n) => { return n.id == ndeId })[0];
+      var nodeV0 = allFlows[0].flowdata.filter((n) => { return n.id == ndeId })[0];
+
+      showDiffPopup(nodeV0, allFlows[0].sha, nodeV1, allFlows[1].sha);
+    });
+  });
+
+  Object.keys(diff.moved).forEach((ndeId) => {
+    $('.node-' + ndeId).addClass('moved');
+    
+    $('.group-' + ndeId).addClass('moved');
+    $('.group-' + ndeId).on('click', function (e) {
+      var nodeV1 = allFlows[1].flowdata.filter((n) => { return n.id == ndeId })[0];
+      var nodeV0 = allFlows[0].flowdata.filter((n) => { return n.id == ndeId })[0];
+
+      showDiffPopup(nodeV0, allFlows[0].sha, nodeV1, allFlows[1].sha);
+    });
+  });
+
+  Object.keys(diff.deleted).forEach((ndeId) => {
+    $('.node-' + ndeId).addClass('deleted');
+    $('.group-' + ndeId).addClass('deleted');
+  });
+
+  return diff;
+}
+
+function fillSelector(selectedFlowId, flowIdHash, diffData) {
+  var sltObj = $('#flowSelector');
+
+  if (diffData) {
+    for (var flowId in flowIdHash) {
+      var mods = [];
+
+      mods.push(flowId in diffData.tabHas.moved ? "m" : ".");
+      mods.push(flowId in diffData.tabHas.changed ? "*" : ".");
+      mods.push(flowId in diffData.tabHas.added ? "+" : ".");
+      mods.push(flowId in diffData.tabHas.deleted ? "-" : ".");
+
+      sltObj.append($('<option></option>').val(flowId).html(
+        "[" + mods.join("") + "] " + flowIdHash[flowId]
+      ));
+    }
+  } else {
+    for (var flowId in flowIdHash) {
+      sltObj.append($('<option></option>').val(flowId).html(flowIdHash[flowId]));
+    }
+  }
+
+  sltObj.find('[value="' + selectedFlowId + '"]').attr('selected', 'selected');
+}
+
+function getFlowData(comparingVersions, allTouts) {
+  $.ajax({
+    dataType: "json",
+    url: "/flows.json",
+    method: 'post',
+    data: { shas: comparingVersions },
+    success: function (vdata) {
+      $(allTouts).each(function (i, d) { clearTimeout(d) });
+      $('#body').html(vdata.html)
+
+      $('#flowSelector').on('change', onChangeSelector);
+      allFlows = vdata.flows;
+
+      var params = new URLSearchParams(window.location.search);
+      var flowId = undefined;
+
+      if ( params.has("flid") ) { flowId = params.get("flid") }
+
+      $('.container-diff0').css('opacity', 1)
+      for (var idx = 1; idx < allFlows.length; idx++) { $('.container-diff' + idx).css('opacity', 0) }
+
+      for (var idx = 0; idx < allFlows.length; idx++) {
+        allFlows[idx].flowdata = JSON.parse(atob(allFlows[idx].content));
+
+        allFlows[idx].flowdata.forEach(function (obj) {
+          if (obj.type == "tab") {
+            uniqFlowIds[obj.id] = obj.label;
+          }
+        });
+
+        /* if no flowId was provided, take the first one we have found */
+        if (!flowId) { flowId = Object.keys(uniqFlowIds)[0] }
+
+        renderFlowIdForIdx(flowId, idx);
+
+        var descContainer = $($('#svgelem .container-diff' + idx + " .flowDescription")[0]);
+        var commitDetails = releasesMetaData[allFlows[idx].sha];
+        var description = "[" + commitDetails.sha + "] " + commitDetails.committer.date + " " + commitDetails.message + " by " + commitDetails.committer.name;
+        var textElem = getNode('text', {
+          y: 25,
+          x: 5,
+          class: 'flow-description-text'
+        });
+
+        textElem.textContent = description;
+        descContainer.append(textElem);
+      }
+
+      var diffData = updateWithDiffData();
+      fillSelector(flowId, uniqFlowIds, diffData);
+      setupSlider();
+      renderFlow("", [], $($('#svgelem .container-gridlines')[0]), { gridlines: true });
+    }
+  });
+}
+
+
+function fallbackCopyTextToClipboard(text, cb) {
+  var textArea = document.createElement("textarea");
+  textArea.value = text;
+
+  // Avoid scrolling to bottom
+  textArea.style.top = "0";
+  textArea.style.left = "0";
+  textArea.style.position = "fixed";
+
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    var successful = document.execCommand('copy');
+    var msg = successful ? 'successful' : 'unsuccessful';
+
+    if (successful && cb && typeof cb == "function") { cb(); }
+
+    console.log('Fallback: Copying text command was ' + msg);
+  } catch (err) {
+    console.error('Fallback: Oops, unable to copy', err);
+  }
+
+  document.body.removeChild(textArea);
+}
+
+function copyTextToClipboard(text, cb) {
+  if (!navigator.clipboard) {
+    fallbackCopyTextToClipboard(text);
+    return;
+  }
+
+  navigator.clipboard.writeText(text).then(
+    function () {
+      if (cb && typeof cb == "function") { cb(); }
+      console.log('Async: Copying to clipboard was successful!');
+    }, function (err) {
+      console.error('Async: Could not copy text: ', err);
+    }
+  );
+}
+
+  function setupSvg() {
+
+    $('#flowSelector').on('change', onChangeSelector);
+
+    var params = new URLSearchParams(window.location.search);
+    var flowId = undefined;
+
+    if (params.has("flid")) { flowId = params.get("flid") }
+
+    $('.container-diff0').css('opacity', 1)
+    for (var idx = 1; idx < allFlows.length; idx++) { $('.container-diff' + idx).css('opacity', 0) }
+
+    for (var idx = 0; idx < allFlows.length; idx++) {
+        flowId = undefined;
+        
+        allFlows[idx].flowdata.forEach(function (obj) {
+            if (obj.type == "tab") {
+                uniqFlowIds[obj.id] = obj.label;
+            }
+        });
+
+        /* if no flowId was provided, take the first one we have found */
+        if (!flowId) { flowId = Object.keys(uniqFlowIds)[0] }
+        if (!flowId) { flowId = allFlows[idx].flowdata[0].z || allFlows[idx].flowdat[1].z || allFlows[idx].flowdat[2].z}
+
+        renderFlowIdForIdx(flowId, idx);
+
+        var descContainer = $($('#svgelem .container-diff' + idx + " .flowDescription")[0]);
+        var commitDetails = releasesMetaData[allFlows[idx].sha];
+        var description = "[" + commitDetails.sha + "] ";
+        var textElem = getNode('text', {
+            y: 25,
+            x: 5,
+            class: 'flow-description-text'
+        });
+
+        textElem.textContent = description;
+        descContainer.append(textElem);
+    }
+
+    var diffData = updateWithDiffData();
+    fillSelector(flowId, uniqFlowIds, diffData);
+    setupSlider();
+    renderFlow("", [], $($('#svgelem .container-gridlines')[0]), { gridlines: true });
+}
+
+
+  $(function(){
+      $('#clear').on('click', function(e){
+        e.preventDefault();
+        $('#flow1').val("")
+        $('#flow2').val("")
+      })    
+        
+    var params = new URLSearchParams(window.location.search);
+
+    if ( params.has('flow1') && params.has('flow2') ) {
+      var flowdata1 = JSON.parse(atob(params.get('flow1')));
+      var flowdata2 = JSON.parse(atob(params.get('flow2')));
+      
+      $('body').html( $('#template').html() )
+
+        allFlows = [{
+          sha: "version1",
+          flowdata: flowdata1
+        },{
+          sha: "version2",
+          flowdata: flowdata2
+        }];
+
+        releasesMetaData = {
+          "version1": {
+            "sha": "version1",
+            "message": "version1",
+            "committer": {
+              "name": "",
+              "date": ""
+            }
+          },
+          "version2": {
+            "sha": "version2",
+            "message": "version2",
+            "committer": {
+              "name": "",
+              "date": ""
+            }          
+          }
+        }
+
+        setupSvg();
+    } else {
+      
+      $('#comparebutton').on('click', function(e){
+        e.preventDefault();
+        var flowdata1 = JSON.parse($('#flow1').val());
+        var flowdata2 = JSON.parse($('#flow2').val());
+        $('body').html( $('#template').html() );
+
+        allFlows = [{
+          sha: "version1",
+          flowdata: flowdata1
+        },{
+          sha: "version2",
+          flowdata: flowdata2
+        }];
+
+        releasesMetaData = {
+          "version1": {
+            "sha": "version1",
+            "message": "version1",
+            "committer": {
+              "name": "",
+              "date": ""
+            }
+          },
+          "version2": {
+            "sha": "version2",
+            "message": "version2",
+            "committer": {
+              "name": "",
+              "date": ""
+            }          
+            }
+        }
+
+        setupSvg();
+
+       });
+
+      $('#createurl').on('click', function(e){
+        e.preventDefault();
+      
+        confirm( 'Some URLs will be too long and break servers, you will be redirect to the url after clicking ok.');
+        window.location = 'https://backup.openmindmap.org/compare?flow1=' + encodeURI(btoa($('#flow1').val())) + "&flow2=" + encodeURI(btoa($('#flow2').val()));
+      });    
+    }
+  })
+</script>
+
+</html>
