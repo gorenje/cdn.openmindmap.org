@@ -899,7 +899,7 @@ function copyTextToClipboard(text, cb) {
         e.preventDefault();
       
         confirm( 'Some URLs will be too long and break servers, you will be redirect to the url after clicking ok.');
-        window.location = window.location.host + window.location.pathname + '?flow1=' + encodeURI(btoa($('#flow1').val())) + "&flow2=" + encodeURI(btoa($('#flow2').val()));
+        window.location = "https://" + window.location.host + window.location.pathname + '?flow1=' + encodeURI(btoa($('#flow1').val())) + "&flow2=" + encodeURI(btoa($('#flow2').val()));
       });    
     }
   })
