@@ -121,8 +121,10 @@
   <p>
   <input id="comparebutton" type="button" name="Compare" value="Compare"/>
   <input id="createurl" type="button" name="Create URL" value="Create URL"/>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <input id="clear" type="button" name="Clear" value="Clear"/>
+
+  <input style="margin-left: 50px;" id="clear" type="button" name="Clear" value="Clear"/>
+
+  <input style="margin-left: 50px;" id="syncids" type="button" name="Sync IDs & Compare" value="Sync IDs & Compare"/>
 </body>
 
 
@@ -287,22 +289,22 @@ function showDiffPopup(ndeV1, shaV1, ndeV2, shaV2) {
 
   Object.keys(ndeV2).forEach(function (nme) {
     if ( Object.keys(ndeV1).indexOf(nme) < 0 ) {
-      $('#dv-details').append("<tr class='dv-removed'><th>" + nme + attrDesc(nme) + "</th><td><i>MISSING</i></td><td><code>" + escapeHtml(ndeV2[nme]) + "</code></td></tr>")
+      var txt = typeof ndeV2[nme] == "object" ? JSON.stringify(ndeV2[nme]) : ndeV2[nme];
+      $('#dv-details').append("<tr class='dv-removed'><th>" + nme + attrDesc(nme) + "</th><td><i>MISSING</i></td><td><code>" + escapeHtml(txt) + "</code></td></tr>")
     }
   });
 
   Object.keys(ndeV1).forEach(function (nme) {
     if (Object.keys(ndeV2).indexOf(nme) < 0) {
-      $('#dv-details').append("<tr class='dv-added'><th>" + nme + attrDesc(nme) + "</th><td><code>" + escapeHtml(ndeV1[nme]) +"</code></td><td><i>ADDED</i></td></tr>")
+      var txt = typeof ndeV1[nme] == "object" ? JSON.stringify(ndeV1[nme]) : ndeV1[nme];
+      $('#dv-details').append("<tr class='dv-added'><th>" + nme + attrDesc(nme) + "</th><td><code>" + escapeHtml(txt) +"</code></td><td><i>ADDED</i></td></tr>")
     }
   });
 
   Object.keys(ndeV1).forEach(function (nme) {
     if (Object.keys(ndeV2).indexOf(nme) > -1) {
 
-      var cls = (JSON.stringify(ndeV1[nme]) !== JSON.stringify(ndeV2[nme]) ? "dv-differ" : "")
-
-      if ( cls == "dv-differ") {
+      if ( JSON.stringify(ndeV1[nme]) !== JSON.stringify(ndeV2[nme]) ) {
         let span = null;
 
         let diff = undefined;
@@ -327,7 +329,7 @@ function showDiffPopup(ndeV1, shaV1, ndeV2, shaV2) {
         });
 
         var row = document.createElement('tr');
-        row.setAttribute('class',cls)
+        row.setAttribute('class',"dv-differ")
         var cell = document.createElement('th')
         cell.appendChild(document.createTextNode(nme))
         if (descMap[nme]) {
@@ -345,12 +347,11 @@ function showDiffPopup(ndeV1, shaV1, ndeV2, shaV2) {
         row.append(cell)
         $('#dv-details').append(row)
       } else {
-        $('#dv-details').append("<tr class='" + cls + "'><th>" + nme + "</th><td><code>" + escapeHtml(ndeV1[nme]) + "</code></td><td><code>" + escapeHtml(ndeV2[nme]) + "</code></td></tr>")
+        $('#dv-details').append("<tr><th>" + nme + "</th><td><code>" + escapeHtml(ndeV1[nme]) + "</code></td><td><code>" + escapeHtml(ndeV2[nme]) + "</code></td></tr>")
       }
 
     }
   });
-
 
   $('#dv-nde1-copy').data('json', JSON.stringify([ndeV1]));
   $('#dv-nde1-copy').data('commit', shaV1);
@@ -814,6 +815,20 @@ function copyTextToClipboard(text, cb) {
 
 
   $(function(){
+      $('#syncids').on('click', function(e){
+        var flowdata1 = JSON.parse($('#flow1').val());
+        var flowdata2 = JSON.parse($('#flow2').val());
+
+        for ( var idx = 0; idx < flowdata1.length; idx++ ) {
+          flowdata2[idx].id = flowdata1[idx].id;
+        }
+
+        $('#flow1').val(JSON.stringify(flowdata1));
+        $('#flow2').val(JSON.stringify(flowdata2));
+
+        $('#comparebutton').trigger('click');
+      });
+
       $('#clear').on('click', function(e){
         e.preventDefault();
         $('#flow1').val("")
