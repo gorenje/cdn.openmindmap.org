@@ -8792,7 +8792,7 @@ const dx = (t, e, i) => {
     error: t
   }));
 }, vl = async function(t = {
-  querySelector: ".mermaid"
+  querySelector: ".language-mermaid"
 }) {
   try {
     await px(t);
@@ -8801,7 +8801,7 @@ const dx = (t, e, i) => {
       throw S.error("Use the suppressErrors option to suppress these errors"), e;
   }
 }, px = async function({ postRenderCallback: t, querySelector: e, nodes: i } = {
-  querySelector: ".mermaid"
+  querySelector: ".language-mermaid"
 }) {
   const r = de.getConfig();
   S.debug(`${t ? "" : "No "}Callback function found`);
@@ -8839,7 +8839,7 @@ const dx = (t, e, i) => {
   de.initialize(t);
 }, gx = async function(t, e, i) {
   S.warn("mermaid.init is deprecated. Please use run instead."), t && wl(t);
-  const r = { postRenderCallback: i, querySelector: ".mermaid" };
+  const r = { postRenderCallback: i, querySelector: ".language-mermaid" };
   typeof e == "string" ? r.querySelector = e : e && (e instanceof HTMLElement ? r.nodes = [e] : r.nodes = e), await vl(r);
 }, mx = async (t, {
   lazyLoad: e = !0
