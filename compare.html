@@ -136,7 +136,6 @@
   <input style="width: 300px" id="slider" type="range" min="0" max="1" step="1" value="0"></input>
   Select flow tab to compare:
   <select id="flowSelector"></select>
-  <a style="display: none;" href="#" style="margin-left: 30px;" target="_blank" id="flowPerma">permalink</a>
 </div>
 
 <div id='svgcontainer'
@@ -169,7 +168,7 @@
 <div class="parentDisable" onclick="$('#diff-viewer').hide(); $('.parentDisable').hide(); return false;"></div>
 <div id="diff-viewer">
   <a href="#" onclick="$('#diff-viewer').hide(); $('.parentDisable').hide(); return false;">close</a>
-  <a href="#" style="margin-left: 30px;" target="_blank" id="diffPerma">permalink</a>
+  
   <p>
 
   <i style="font-size: 80%;">Element</i>
@@ -273,9 +272,10 @@ function getCommitMetadata(queryString, cb) {
   });
 }
 
-function getAllCommits() {
+function getAllCommits(cb) {
   getCommitMetadata("", (vdata) => {
     $('#tbody').html(vdata.html)
+    if ( cb ) { cb() };
   });
 }
 
