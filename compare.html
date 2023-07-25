@@ -15,9 +15,11 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdn.openmindmap.org/embed/jquery-3.7.0.min.js" referrerpolicy="no-referrer"></script>
-  <script src="https://cdn.openmindmap.org/embed/flowviewer.js" crossorigin="anonymous" referrerpolicy="no-referrer">
-  </script>
+  
+  <script src="https://cdn.openmindmap.org/embed/flowviewer.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <link rel="stylesheet" href="https://cdn.openmindmap.org/embed/flowviewer.css">
+
+
   <style>
     .flow-description-text {
   font-family: monospace;
@@ -134,6 +136,7 @@
   <input style="width: 300px" id="slider" type="range" min="0" max="1" step="1" value="0"></input>
   Select flow tab to compare:
   <select id="flowSelector"></select>
+  <a style="display: none;" href="#" style="margin-left: 30px;" target="_blank" id="flowPerma">permalink</a>
 </div>
 
 <div id='svgcontainer'
@@ -166,8 +169,9 @@
 <div class="parentDisable" onclick="$('#diff-viewer').hide(); $('.parentDisable').hide(); return false;"></div>
 <div id="diff-viewer">
   <a href="#" onclick="$('#diff-viewer').hide(); $('.parentDisable').hide(); return false;">close</a>
-
+  <a href="#" style="margin-left: 30px;" target="_blank" id="diffPerma">permalink</a>
   <p>
+
   <i style="font-size: 80%;">Element</i>
   <table border="1">
     <tr>
@@ -190,8 +194,8 @@
     <thead>
     <tr>
       <th>AttrName</th>
-      <th><code style="font-size:80%;" id="dv-nde1-sha"></code> <a id="dv-nde1-copy" href="#" onclick="copyToClipboard(this); return false;">[EX]</a></th>
-      <th><code style="font-size:80%;" id="dv-nde2-sha"></code> <a id="dv-nde2-copy" href="#" onclick="copyToClipboard(this); return false;">[EX]</a></th>
+      <th><code id="dv-nde1-sha"></code> <a id="dv-nde1-copy" style="font-size:80%;" href="#" onclick="copyToClipboard(this); return false;"><i>(export)</i></a></th>
+      <th><code id="dv-nde2-sha"></code> <a id="dv-nde2-copy" style="font-size:80%;" href="#" onclick="copyToClipboard(this); return false;"><i>(export)</i></a></th>
     </tr>
     </thead>
     <tbody id="dv-details">
@@ -230,6 +234,14 @@ function escapeHtml(string) {
   });
 }
 
+function updateFlowPermaLink() {
+  if (allFlows.length == 2) {
+    $('#flowPerma').show().attr('href', '/?flid=' + $('#flowSelector').val() + "&v2=" + allFlows[0].sha + "&v1=" + allFlows[1].sha)
+  } else {
+    $('#flowPerma').hide()
+  }
+}
+
 function onChangeSelector(e) {
   e.preventDefault();
 
@@ -245,6 +257,8 @@ function onChangeSelector(e) {
     renderFlowIdForIdx(flowId, idx)
     updateWithDiffData()
   }
+
+  updateFlowPermaLink();
 }
 
 function getCommitMetadata(queryString, cb) {
@@ -275,7 +289,7 @@ function attrDesc(nme) {
   return descMap[nme] ? " <i style='font-size: 80%;'>(" + descMap[nme] + ")</i>" : "";
 }
 
-function showDiffPopup(ndeV1, shaV1, ndeV2, shaV2) {
+function showDiffPopup(ndeV1, shaV1, ndeV2, shaV2, elemType) {
   $('.parentDisable').show();
   $('#diff-viewer').show();
 
@@ -286,6 +300,8 @@ function showDiffPopup(ndeV1, shaV1, ndeV2, shaV2) {
   $('#dv-nde2-sha').html(shaV2);
   
   $('#dv-details').html("");
+
+  $('#diffPerma').attr('href', "/?" + elemType + "=" + ndeV1.id + "&v2=" + shaV1 + "&v1=" + shaV2 + "&flid=" + ndeV1.z);
 
   Object.keys(ndeV2).forEach(function (nme) {
     if ( Object.keys(ndeV1).indexOf(nme) < 0 ) {
@@ -597,20 +613,32 @@ function updateWithDiffData() {
     $('.group-' + ndeId).addClass('added');
   });
 
+  Object.keys(diff.moved).forEach((ndeId) => {
+    $('.node-' + ndeId).addClass('moved');
+
+    $('.group-' + ndeId).addClass('moved');
+    $('.group-' + ndeId).on('click', function (e) {
+      var nodeV1 = allFlows[1].flowdata.filter((n) => { return n.id == ndeId })[0];
+      var nodeV0 = allFlows[0].flowdata.filter((n) => { return n.id == ndeId })[0];
+
+      showDiffPopup(nodeV0, allFlows[0].sha, nodeV1, allFlows[1].sha, "grpid");
+    });
+  });
+
   Object.keys(diff.changed).forEach((ndeId) => {
     $('.node-' + ndeId).addClass('changed');
     $('.node-' + ndeId).on('click', function(e) {
       var nodeV1 = allFlows[1].flowdata.filter((n) => { return n.id == ndeId })[0];
       var nodeV0 = allFlows[0].flowdata.filter((n) => { return n.id == ndeId })[0];
 
-      showDiffPopup(nodeV0, allFlows[0].sha, nodeV1, allFlows[1].sha);
+      showDiffPopup(nodeV0, allFlows[0].sha, nodeV1, allFlows[1].sha, "ndeid");
     });
 
     $('.node-' + ndeId).siblings().on('click', function (e) {
       var nodeV1 = allFlows[1].flowdata.filter((n) => { return n.id == ndeId })[0];
       var nodeV0 = allFlows[0].flowdata.filter((n) => { return n.id == ndeId })[0];
 
-      showDiffPopup(nodeV0, allFlows[0].sha, nodeV1, allFlows[1].sha);
+      showDiffPopup(nodeV0, allFlows[0].sha, nodeV1, allFlows[1].sha, "ndeid");
     });
 
     $('.group-' + ndeId).addClass('changed');
@@ -618,21 +646,10 @@ function updateWithDiffData() {
       var nodeV1 = allFlows[1].flowdata.filter((n) => { return n.id == ndeId })[0];
       var nodeV0 = allFlows[0].flowdata.filter((n) => { return n.id == ndeId })[0];
 
-      showDiffPopup(nodeV0, allFlows[0].sha, nodeV1, allFlows[1].sha);
+      showDiffPopup(nodeV0, allFlows[0].sha, nodeV1, allFlows[1].sha, "grpid");
     });
   });
 
-  Object.keys(diff.moved).forEach((ndeId) => {
-    $('.node-' + ndeId).addClass('moved');
-    
-    $('.group-' + ndeId).addClass('moved');
-    $('.group-' + ndeId).on('click', function (e) {
-      var nodeV1 = allFlows[1].flowdata.filter((n) => { return n.id == ndeId })[0];
-      var nodeV0 = allFlows[0].flowdata.filter((n) => { return n.id == ndeId })[0];
-
-      showDiffPopup(nodeV0, allFlows[0].sha, nodeV1, allFlows[1].sha);
-    });
-  });
 
   Object.keys(diff.deleted).forEach((ndeId) => {
     $('.node-' + ndeId).addClass('deleted');
@@ -667,7 +684,7 @@ function fillSelector(selectedFlowId, flowIdHash, diffData) {
   sltObj.find('[value="' + selectedFlowId + '"]').attr('selected', 'selected');
 }
 
-function getFlowData(comparingVersions, allTouts) {
+function getFlowData(comparingVersions, allTouts, cb) {
   $.ajax({
     dataType: "json",
     url: "/flows.json",
@@ -692,8 +709,8 @@ function getFlowData(comparingVersions, allTouts) {
         allFlows[idx].flowdata = JSON.parse(atob(allFlows[idx].content));
 
         allFlows[idx].flowdata.forEach(function (obj) {
-          if (obj.type == "tab") {
-            uniqFlowIds[obj.id] = obj.label;
+          if (obj.type == "tab" || obj.type == "subflow") {
+            uniqFlowIds[obj.id] = (obj.type == "subflow" ? " [SF] " : "") + (obj.label || obj.name);
           }
         });
 
@@ -719,10 +736,11 @@ function getFlowData(comparingVersions, allTouts) {
       fillSelector(flowId, uniqFlowIds, diffData);
       setupSlider();
       renderFlow("", [], $($('#svgelem .container-gridlines')[0]), { gridlines: true });
+      
+      if ( cb ) { cb() }
     }
   });
 }
-
 
 function fallbackCopyTextToClipboard(text, cb) {
   var textArea = document.createElement("textarea");
@@ -783,8 +801,8 @@ function copyTextToClipboard(text, cb) {
         flowId = undefined;
         
         allFlows[idx].flowdata.forEach(function (obj) {
-            if (obj.type == "tab") {
-                uniqFlowIds[obj.id] = obj.label;
+            if (obj.type == "tab" || obj.type == "subflow") {
+                uniqFlowIds[obj.id] = (obj.type == "subflow" ? " [SF] " : "") + (obj.label || obj.name); 
             }
         });
 
