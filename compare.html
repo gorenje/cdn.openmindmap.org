@@ -53,18 +53,17 @@
 }
 
 #diff-viewer{
-  overflow:auto;
+  overflow:scroll;
   background-color:rgb(244, 244, 244);
   border: 2px solid #000;
-  width:80%;
-  height:70%;
+  height:80vh;
   display:none;
   position:fixed;
-  top:55%;
-  left:50%;
-  margin:-30% 0 0 -40%;
+  top:10vh;
+  left:5vw;
   z-index: 1000;
   padding: 20px;
+  max-width: 90vw;
 }
 
 .parentDisable{
@@ -287,6 +286,29 @@ function copyToClipboard(elem) {
 
 function attrDesc(nme) {
   return descMap[nme] ? " <i style='font-size: 80%;'>(" + descMap[nme] + ")</i>" : "";
+}
+
+function showNodeContentPopup(ndeV1, shaV1, ndeV2, shaV2, elemType) {
+  $('.parentDisable').show();
+  $('#diff-viewer').show();
+  
+  $('#dv-details').html("");
+
+  $('#diffPerma').attr('href', "/?" + elemType + "=" + ndeV1.id + "&v2=" + shaV1 + "&v1=" + shaV2 + "&flid=" + ndeV1.z);
+
+  $('#dv-nde-name').html(ndeV1.name);
+  $('#dv-nde-type').html(ndeV1.type);
+  $('#dv-nde-id').html(ndeV1.id);
+  $('#dv-nde1-sha').html(shaV1);
+  $('#dv-nde2-sha').html(shaV2);
+
+  Object.keys(ndeV1).forEach(function (nme) {
+    var txt = typeof ndeV1[nme] == "object" ? JSON.stringify(ndeV1[nme]) : ndeV1[nme];
+    $('#dv-details').append("<tr class='dv-added'><th>" + nme + attrDesc(nme) + "</th><td><code>" + escapeHtml(txt) + "</code></td><td><i>ADDED</i></td></tr>")
+  });
+
+  $('#dv-nde1-copy').data('json', JSON.stringify([ndeV1]));
+  $('#dv-nde1-copy').data('commit', shaV1);
 }
 
 function showDiffPopup(ndeV1, shaV1, ndeV2, shaV2, elemType) {
@@ -611,6 +633,17 @@ function updateWithDiffData() {
   Object.keys(diff.added).forEach((ndeId) => {
     $('.node-' + ndeId).addClass('added');
     $('.group-' + ndeId).addClass('added');
+    
+    $('.node-' + ndeId).siblings().on('click', function (e) {
+      var nodeV1 = allFlows[0].flowdata.filter((n) => { return n.id == ndeId })[0];
+
+      showNodeContentPopup(nodeV1, allFlows[0].sha, undefined, allFlows[1].sha, "ndeid");
+    });
+    $('.node-' + ndeId).on('click', function (e) {
+      var nodeV1 = allFlows[0].flowdata.filter((n) => { return n.id == ndeId })[0];
+
+      showNodeContentPopup(nodeV1, allFlows[0].sha, undefined, allFlows[1].sha, "ndeid");
+    });
   });
 
   Object.keys(diff.moved).forEach((ndeId) => {
