@@ -769,7 +769,21 @@ function getFlowData(comparingVersions, allTouts, cb) {
       fillSelector(flowId, uniqFlowIds, diffData);
       setupSlider();
       renderFlow("", [], $($('#svgelem .container-gridlines')[0]), { gridlines: true });
-      
+
+      setTimeout(function () {
+        var svgs = d3.selectAll("#svgcontainer svg");
+        svgs.each(function () {
+          var svg = d3.select(this);
+
+          svg.html("<g>" + svg.html() + "</g>");
+          var inner = svg.select("g");
+          var zoom = d3.zoom().on("zoom", function (event) {
+            inner.attr("transform", event.transform);
+          });
+          svg.call(zoom);
+        })
+      },750);
+
       if ( cb ) { cb() }
     }
   });
@@ -870,7 +884,7 @@ function copyTextToClipboard(text, cb) {
         var flowdata1 = JSON.parse($('#flow1').val());
         var flowdata2 = JSON.parse($('#flow2').val());
 
-        for ( var idx = 0; idx < flowdata1.length; idx++ ) {
+        for ( var idx = 0; idx < flowdata1.length && idx < flowdata2.length; idx++ ) {
           flowdata2[idx].id = flowdata1[idx].id;
         }
 
