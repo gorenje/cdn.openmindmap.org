@@ -977,6 +977,41 @@ function copyTextToClipboard(text, cb) {
         }
 
         setupSvg();
+    } else if (params.has('flowhubpr')) {
+      $.get("https://raw.githubusercontent.com/gorenje/flows.flowhub.org/"+params.get('flowhubpr')+"/"+params.get('flowhubpr')+"/flows.json?cb=" + escape(new Date())).then( (d) => { 
+
+        var flowdata = JSON.parse(d);
+        $('body').html( $('#template').html() )
+
+        allFlows = [{
+          sha: "version1",
+          flowdata: flowdata
+        },{
+          sha: "version2",
+          flowdata: flowdata
+        }];
+
+        releasesMetaData = {
+          "version1": {
+            "sha": "version1",
+            "message": "version1",
+            "committer": {
+              "name": "",
+              "date": ""
+            }
+          },
+          "version2": {
+            "sha": "version2",
+            "message": "version2",
+            "committer": {
+              "name": "",
+              "date": ""
+            }          
+          }
+        }
+
+        setupSvg();
+      })
     } else {
       
       $('#comparebutton').on('click', function(e){
