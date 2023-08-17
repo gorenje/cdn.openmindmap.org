@@ -13,6 +13,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.openmindmap.org/content/favicon-16x16.png">
   <link rel="manifest" href="https://blog.openmindmap.org/f/site.webmanifest">
 
+  <script src="https://cdn.openmindmap.org/thirdparty/d3.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdn.openmindmap.org/embed/jquery-3.7.0.min.js" referrerpolicy="no-referrer"></script>
   
@@ -99,6 +100,10 @@
     word-wrap: break-word;
     margin: 0px !important;
 }
+
+#flowdownloadlinks a {
+  margin-left: 10px;
+}
   </style>
 </head>
 
@@ -130,11 +135,12 @@
 
 
 <script id="template" style="display: none" type="text/html">
-<div style="position: fixed; top: 10; left: 10; z-index: 10;">
+<div style="position: fixed; top: 10px; left: 10px; z-index: 10;">
   Slide between commits:
   <input style="width: 300px" id="slider" type="range" min="0" max="1" step="1" value="0"></input>
   Select flow tab to compare:
   <select id="flowSelector"></select>
+  <span id="flowdownloadlinks"></span>
 </div>
 
 <div id='svgcontainer'
@@ -717,6 +723,23 @@ function fillSelector(selectedFlowId, flowIdHash, diffData) {
   sltObj.find('[value="' + selectedFlowId + '"]').attr('selected', 'selected');
 }
 
+function addDownloadLink(sha, jsonContent) {
+  var divId = "flowdownloadlinks";
+
+  $('#' + divId).append($("<a>DL: "+sha.substring(0,8)+"</a>").attr(
+    'href', "data:application/json," + encodeURIComponent(jsonContent)
+  ).attr("download", "flow.json").attr('class', 'flow-download-link'));
+
+  $('#' + divId).append($("<a>CP: " + sha.substring(0, 8)+"</a>").attr('href', "#").attr(
+    'id', sha + divId + '-copy-to-clipboard'
+  ).attr('class', 'flow-copy-to-clipboard-link'));
+
+  $('#' + sha + divId + "-copy-to-clipboard").on('click', function (e) {
+    e.preventDefault();
+    copyTextToClipboard(jsonContent, function () { alert('copied') });
+  });
+}
+
 function getFlowData(comparingVersions, allTouts, cb) {
   $.ajax({
     dataType: "json",
@@ -739,7 +762,11 @@ function getFlowData(comparingVersions, allTouts, cb) {
       for (var idx = 1; idx < allFlows.length; idx++) { $('.container-diff' + idx).css('opacity', 0) }
 
       for (var idx = 0; idx < allFlows.length; idx++) {
-        allFlows[idx].flowdata = JSON.parse(atob(allFlows[idx].content));
+        var jsonContent = atob(allFlows[idx].content);
+
+        allFlows[idx].flowdata = JSON.parse(jsonContent);
+
+        addDownloadLink(allFlows[idx].sha, jsonContent);
 
         allFlows[idx].flowdata.forEach(function (obj) {
           if (obj.type == "tab" || obj.type == "subflow") {
@@ -876,6 +903,20 @@ function copyTextToClipboard(text, cb) {
     fillSelector(flowId, uniqFlowIds, diffData);
     setupSlider();
     renderFlow("", [], $($('#svgelem .container-gridlines')[0]), { gridlines: true });
+
+    setTimeout(function () {
+        var svgs = d3.selectAll("#svgcontainer svg");
+        svgs.each(function () {
+            var svg = d3.select(this);
+
+            svg.html("<g>" + svg.html() + "</g>");
+            var inner = svg.select("g");
+            var zoom = d3.zoom().on("zoom", function (event) {
+                inner.attr("transform", event.transform);
+            });
+            svg.call(zoom);
+        })
+    }, 750);
 }
 
 
@@ -940,6 +981,7 @@ function copyTextToClipboard(text, cb) {
       
       $('#comparebutton').on('click', function(e){
         e.preventDefault();
+        
         var flowdata1 = JSON.parse($('#flow1').val());
         var flowdata2 = JSON.parse($('#flow2').val());
         $('body').html( $('#template').html() );
@@ -968,7 +1010,7 @@ function copyTextToClipboard(text, cb) {
               "name": "",
               "date": ""
             }          
-            }
+          }
         }
 
         setupSvg();
