@@ -899,9 +899,6 @@ function copyTextToClipboard(text, cb) {
         descContainer.append(textElem);
     }
 
-    var diffData = updateWithDiffData();
-    fillSelector(flowId, uniqFlowIds, diffData);
-    setupSlider();
     renderFlow("", [], $($('#svgelem .container-gridlines')[0]), { gridlines: true });
 
     setTimeout(function () {
@@ -916,7 +913,12 @@ function copyTextToClipboard(text, cb) {
             });
             svg.call(zoom);
         })
+        
+        var diffData = updateWithDiffData();
+        fillSelector(flowId, uniqFlowIds, diffData);
+        setupSlider();
     }, 750);
+
 }
 
 
