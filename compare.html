@@ -502,7 +502,7 @@ setTout(() => { $('#body').html("Puff What is going on?!?!?!?") }, 8300);
 
 function renderFlowIdForIdx(flowId, idx) {
   renderFlow(flowId, allFlows[idx].flowdata, $($('#svgelem .container-diff' + idx)[0]), {
-    "arrows": false,
+    "arrows": window.useflowviewerarrows,
     "gridlines": false,
     "zoom": true, /* does not have any affect */
     "images": true,
@@ -845,7 +845,7 @@ function fallbackCopyTextToClipboard(text, cb) {
 
 function copyTextToClipboard(text, cb) {
   if (!navigator.clipboard) {
-    fallbackCopyTextToClipboard(text);
+    fallbackCopyTextToClipboard(text, cb);
     return;
   }
 
