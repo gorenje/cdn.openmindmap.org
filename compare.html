@@ -761,8 +761,18 @@ function getFlowData(comparingVersions, allTouts, cb) {
       $('.container-diff0').css('opacity', 1)
       for (var idx = 1; idx < allFlows.length; idx++) { $('.container-diff' + idx).css('opacity', 0) }
 
+      // atob(..) does not handle UTF-8, replace it.
+      // Taken from https://developer.mozilla.org/en-US/docs/Glossary/Base64#the_unicode_problem
+      var atobUtf8 = (content) => {
+        function base64ToBytes(base64) {
+          const binString = atob(base64);
+          return Uint8Array.from(binString, (m) => m.codePointAt(0));
+        }
+        return new TextDecoder().decode(base64ToBytes(content));
+      }
+
       for (var idx = 0; idx < allFlows.length; idx++) {
-        var jsonContent = atob(allFlows[idx].content);
+        var jsonContent = atobUtf8(allFlows[idx].content);
 
         allFlows[idx].flowdata = JSON.parse(jsonContent);
 
@@ -945,9 +955,19 @@ function copyTextToClipboard(text, cb) {
         
     var params = new URLSearchParams(window.location.search);
 
+    // atob(..) does not handle UTF-8, replace it.
+    // Taken from https://developer.mozilla.org/en-US/docs/Glossary/Base64#the_unicode_problem
+    var atobUtf8 = (content) => {
+      function base64ToBytes(base64) {
+        const binString = atob(base64);
+        return Uint8Array.from(binString, (m) => m.codePointAt(0));
+      }
+      return new TextDecoder().decode(base64ToBytes(content));
+    }
+
     if ( params.has('flow1') && params.has('flow2') ) {
-      var flowdata1 = JSON.parse(atob(params.get('flow1')));
-      var flowdata2 = JSON.parse(atob(params.get('flow2')));
+      var flowdata1 = JSON.parse(atobUtf8(params.get('flow1')));
+      var flowdata2 = JSON.parse(atobUtf8(params.get('flow2')));
       
       $('body').html( $('#template').html() )
 
