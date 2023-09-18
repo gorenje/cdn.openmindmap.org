@@ -104,6 +104,10 @@
 #flowdownloadlinks a {
   margin-left: 10px;
 }
+
+.revchecked {
+  background-color: rgb(203, 234, 172);
+}
   </style>
 </head>
 
@@ -135,16 +139,18 @@
 
 
 <script id="template" style="display: none" type="text/html">
-<div style="position: fixed; top: 10px; left: 10px; z-index: 10;">
-  Slide between commits:
+<div style="position: fixed; top: 10px; left: 10px; z-index: 10;" id="controllerdiv">
+  Compare:
   <input style="width: 300px" id="slider" type="range" min="0" max="1" step="1" value="0"></input>
-  Select flow tab to compare:
+  <br>
+  Flow tab:
   <select id="flowSelector"></select>
+  <br>
   <span id="flowdownloadlinks"></span>
 </div>
 
 <div id='svgcontainer'
-  style="transform: scale(0.5,0.5) translate(-2500px,-2500px) ; top: 50px; left: 10px; position: absolute; overflow: scroll; display: block; z-index: 0;">
+  style="transform: scale(0.5,0.5) translate(-2500px,-2500px) ; top: 80px; left: 10px; position: absolute; overflow: scroll; display: block; z-index: 0;">
 
   <svg id="svgelem" width="5000" height="5000" viewBox="0 0 5000 5000" pointer-events="all" style="cursor: crosshair;"
     version="1.1" xmlns="http://www.w3.org/2000/svg">
@@ -173,10 +179,10 @@
 <div class="parentDisable" onclick="$('#diff-viewer').hide(); $('.parentDisable').hide(); return false;"></div>
 <div id="diff-viewer">
   <a href="#" onclick="$('#diff-viewer').hide(); $('.parentDisable').hide(); return false;">close</a>
-  
+
   <p>
 
-  <i style="font-size: 80%;">Element</i>
+    <i style="font-size: 80%;">Element</i>
   <table border="1">
     <tr>
       <th>Name</th>
@@ -185,7 +191,7 @@
     <tr>
       <th>Type</th>
       <td id="dv-nde-type"></td>
-    </tr>  
+    </tr>
     <tr>
       <th>Id</th>
       <td id="dv-nde-id"></td>
@@ -193,20 +199,27 @@
   </table>
 
   <p>
-  <i style="font-size: 80%;">Comparison</i>
+    <i style="font-size: 80%;">Comparison</i>
   <table border="1">
     <thead>
-    <tr>
-      <th>AttrName</th>
-      <th><code id="dv-nde1-sha"></code> <a id="dv-nde1-copy" style="font-size:80%;" href="#" onclick="copyToClipboard(this); return false;"><i>(export)</i></a></th>
-      <th><code id="dv-nde2-sha"></code> <a id="dv-nde2-copy" style="font-size:80%;" href="#" onclick="copyToClipboard(this); return false;"><i>(export)</i></a></th>
-    </tr>
+      <tr>
+        <th>AttrName</th>
+        <th><code id="dv-nde1-sha"></code> <a id="dv-nde1-copy" style="font-size:80%;" href="#"
+            onclick="copyToClipboard(this); return false;"><i>(export)</i></a></th>
+        <th><code id="dv-nde2-sha"></code> <a id="dv-nde2-copy" style="font-size:80%;" href="#"
+            onclick="copyToClipboard(this); return false;"><i>(export)</i></a></th>
+      </tr>
     </thead>
     <tbody id="dv-details">
     </tbody>
   </table>
 </div>
 
+<script>
+  $(function() {
+    $('#svgcontainer').css('top', ($('#controllerdiv').height() + 15) + "px")
+  })
+</script>
 </script>
 
 <script>
@@ -429,73 +442,7 @@ function waitingForGodot() {
   /* 
    * done for the eyeball rolls - yes this is extra done this way, for the shits and giggles 
    */
-  $('#body').html("Please wait ... system thinking")
-
-setTout(() => { $('#body').html("Please wait ... system thinking.") }, 100);
-setTout(() => { $('#body').html("Please wait ... system thinking..") }, 200);
-setTout(() => { $('#body').html("Please wait ... system thinking...") }, 300);
-setTout(() => { $('#body').html("Please wait ... system thinking..") }, 400);
-setTout(() => { $('#body').html("Please wait ... system thinking.") }, 500);
-setTout(() => { $('#body').html("Please wait ... system thinking") }, 600);
-setTout(() => { $('#body').html("Please wait ... system thinkin") }, 700);
-setTout(() => { $('#body').html("Please wait ... system thinki") }, 800);
-setTout(() => { $('#body').html("Please wait ... system think") }, 900);
-setTout(() => { $('#body').html("Please wait ... system thin") }, 1000);
-setTout(() => { $('#body').html("Please wait ... system thi") }, 1100);
-setTout(() => { $('#body').html("Please wait ... system th") }, 1200);
-setTout(() => { $('#body').html("Please wait ... system t") }, 1300);
-setTout(() => { $('#body').html("Please wait ... system ") }, 1400);
-setTout(() => { $('#body').html("Please wait ... system") }, 1500);
-setTout(() => { $('#body').html("Please wait ... syste") }, 1600);
-setTout(() => { $('#body').html("Please wait ... syst") }, 1700);
-setTout(() => { $('#body').html("Please wait ... sys") }, 1800);
-setTout(() => { $('#body').html("Please wait ... sy") }, 1900);
-setTout(() => { $('#body').html("Please wait ... s") }, 2000);
-setTout(() => { $('#body').html("Please wait ... ") }, 2100);
-setTout(() => { $('#body').html("Please wait ...") }, 2200);
-setTout(() => { $('#body').html("Please wait ..") }, 2300);
-setTout(() => { $('#body').html("Please wait .") }, 2400);
-setTout(() => { $('#body').html("Please wait ") }, 2500);
-setTout(() => { $('#body').html("Please wait") }, 2600);
-setTout(() => { $('#body').html("Please wai") }, 2700);
-setTout(() => { $('#body').html("Please wa") }, 2800);
-setTout(() => { $('#body').html("Please w") }, 2900);
-setTout(() => { $('#body').html("Please ") }, 3000);
-setTout(() => { $('#body').html("Please") }, 3100);
-setTout(() => { $('#body').html("Pleas") }, 3200);
-setTout(() => { $('#body').html("Plea") }, 3300);
-setTout(() => { $('#body').html("Ple") }, 3400);
-setTout(() => { $('#body').html("Pl") }, 3500);
-setTout(() => { $('#body').html("P") }, 3600);
-setTout(() => { $('#body').html("") }, 3700);
-setTout(() => { $('#body').html("P") }, 3800);
-setTout(() => { $('#body').html("Pu") }, 3900);
-setTout(() => { $('#body').html("Puf") }, 4000);
-setTout(() => { $('#body').html("Puff") }, 4100);
-setTout(() => { $('#body').html("Puff W") }, 4200);
-setTout(() => { $('#body').html("Puff Wh") }, 4300);
-setTout(() => { $('#body').html("Puff Wha") }, 4400);
-setTout(() => { $('#body').html("Puff What") }, 4500);
-setTout(() => { $('#body').html("Puff What ") }, 4600);
-setTout(() => { $('#body').html("Puff What i") }, 4700);
-setTout(() => { $('#body').html("Puff What is") }, 4800);
-setTout(() => { $('#body').html("Puff What is ") }, 4900);
-setTout(() => { $('#body').html("Puff What is g") }, 5000);
-setTout(() => { $('#body').html("Puff What is go") }, 5100);
-setTout(() => { $('#body').html("Puff What is goi") }, 5200);
-setTout(() => { $('#body').html("Puff What is goin") }, 5300);
-setTout(() => { $('#body').html("Puff What is going") }, 5400);
-setTout(() => { $('#body').html("Puff What is going ") }, 5500);
-setTout(() => { $('#body').html("Puff What is going o") }, 5600);
-setTout(() => { $('#body').html("Puff What is going on") }, 5700);
-setTout(() => { $('#body').html("Puff What is going on?") }, 5800);
-setTout(() => { $('#body').html("Puff What is going on!?") }, 6000);
-setTout(() => { $('#body').html("Puff What is going on?!?") }, 6300);
-setTout(() => { $('#body').html("Puff What is going on!?!?") }, 6700);
-setTout(() => { $('#body').html("Puff What is going on?!?!?") }, 7200);
-setTout(() => { $('#body').html("Puff What is going on!?!?!?") }, 7700);
-setTout(() => { $('#body').html("Puff What is going on?!?!?!?") }, 8300);
-
+  $('#body').html("Please wait ... <img height='15px' src='https://cdn.openmindmap.org/content/1690311564501_loader.svg'/>")
 
   return allTouts;
 }
