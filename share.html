@@ -154,11 +154,18 @@
 </head>
 <script type="text/javascript">
     (function () {
-
         var fd = (new URLSearchParams(window.location.search ));
 
+        var atobUtf8 = (content) => {
+            function base64ToBytes(base64) {
+              const binString = atob(base64);
+              return Uint8Array.from(binString, (m) => m.codePointAt(0));
+            }
+            return new TextDecoder().decode(base64ToBytes(content));
+        };
+
         // pull Flow into JS
-        const flow = ( fd.has("f") && atob(fd.get("f")) ) || [{"id":"32b083d0ca67265f","type":"inject","z":"bcaf1d5e01c74a74","name":"","props":[{"p":"payload"},{"p":"topic","vt":"str"}],"repeat":"","crontab":"","once":false,"onceDelay":0.1,"topic":"","payload":"","payloadType":"date","x":140,"y":60,"wires":[["53db14b9a848d5ce"]]},{"id":"53db14b9a848d5ce","type":"http request","z":"bcaf1d5e01c74a74","name":"","method":"GET","ret":"obj","paytoqs":"ignore","url":"https://api.npmjs.org/downloads/range/last-month/@flowforge/node-red-dashboard","tls":"","persist":false,"proxy":"","insecureHTTPParser":false,"authType":"","senderr":false,"headers":[],"x":310,"y":60,"wires":[["9e08fa8d25a19f24"]]},{"id":"9e08fa8d25a19f24","type":"debug","z":"bcaf1d5e01c74a74","name":"debug 1","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"false","statusVal":"","statusType":"auto","x":480,"y":60,"wires":[]}]
+        const flow = ( fd.has("f") && JSON.parse(atobUtf8(fd.get("f"))) ) || [{"id":"32b083d0ca67265f","type":"inject","z":"bcaf1d5e01c74a74","name":"","props":[{"p":"payload"},{"p":"topic","vt":"str"}],"repeat":"","crontab":"","once":false,"onceDelay":0.1,"topic":"","payload":"","payloadType":"date","x":140,"y":60,"wires":[["53db14b9a848d5ce"]]},{"id":"53db14b9a848d5ce","type":"http request","z":"bcaf1d5e01c74a74","name":"","method":"GET","ret":"obj","paytoqs":"ignore","url":"https://api.npmjs.org/downloads/range/last-month/@flowforge/node-red-dashboard","tls":"","persist":false,"proxy":"","insecureHTTPParser":false,"authType":"","senderr":false,"headers":[],"x":310,"y":60,"wires":[["9e08fa8d25a19f24"]]},{"id":"9e08fa8d25a19f24","type":"debug","z":"bcaf1d5e01c74a74","name":"debug 1","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"false","statusVal":"","statusType":"auto","x":480,"y":60,"wires":[]}]
 
         /**
          * Parse the flow.json to get the details on the tabs/subflows present
