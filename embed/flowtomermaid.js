@@ -1,6 +1,6 @@
 (function() {
 
-    function constructMermaid(nodes, redRef=undefined) {
+    function constructMermaid(nodes, direction="TB", redRef=undefined) {
         var msg = {
             payload: nodes
         }
@@ -19,7 +19,6 @@
             have to improvis. */
         var RED = redRef;
         if (!redRef) {
-
             RED = {
                 nodes: {
                     node: (nId) => { return id2node[nId] },
@@ -118,7 +117,7 @@
         */
         msg.mermaid = [
             "%% change this to LR Node-RED like UML",
-            "graph " + $('#node-input-direction').val()
+            "graph " + direction
         ];
 
         for (var idx = 0; idx < nodes.length; idx++) {
