@@ -947,39 +947,44 @@ function copyTextToClipboard(text, cb) {
 
         setupSvg();
     } else if (params.has('flowhubpr')) {
-      $.get("https://raw.githubusercontent.com/gorenje/flows.flowhub.org/"+params.get('flowhubpr')+"/"+params.get('flowhubpr')+"/flows.json?cb=" + escape(new Date())).then( (d) => { 
+      $.get("https://raw.githubusercontent.com/gorenje/flows.flowhub.org/"+params.get('flowhubpr')+"/"+params.get('flowhubpr')+"/flows.json?cb=" + escape(new Date())).then( (chgdata) => { 
 
-        var flowdata = JSON.parse(d);
-        $('body').html( $('#template').html() )
+        var flowdataChange = JSON.parse(chgdata);
 
-        allFlows = [{
-          sha: "version1",
-          flowdata: flowdata
-        },{
-          sha: "version2",
-          flowdata: flowdata
-        }];
+        $.get("https://raw.githubusercontent.com/gorenje/flows.flowhub.org/main/"+params.get('flowhubpr')+"/flows.json?cb=" + escape(new Date())).then( (curdata) => {
+          var flowdataCurrent = JSON.parse(curdata);
 
-        releasesMetaData = {
-          "version1": {
-            "sha": "version1",
-            "message": "version1",
-            "committer": {
-              "name": "",
-              "date": ""
+          $('body').html( $('#template').html() )
+
+          allFlows = [{
+            sha: "change",
+            flowdata: flowdataChange
+          },{
+            sha: "current",
+            flowdata: flowdataCurrent
+          }];
+
+          releasesMetaData = {
+            "change": {
+              "sha": "change",
+              "message": "change",
+              "committer": {
+                "name": "",
+                "date": ""
+              }
+            },
+            "current": {
+              "sha": "current",
+              "message": "current",
+              "committer": {
+                "name": "",
+                "date": ""
+              }          
             }
-          },
-          "version2": {
-            "sha": "version2",
-            "message": "version2",
-            "committer": {
-              "name": "",
-              "date": ""
-            }          
           }
-        }
 
-        setupSvg();
+          setupSvg();
+        })
       })
     } else {
       
