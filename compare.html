@@ -836,9 +836,6 @@ function copyTextToClipboard(text, cb) {
                 uniqFlowIds[obj.id] = (obj.type == "subflow" ? " [SF] " : "") + (obj.label || obj.name); 
             }
         });
-
-
-        console.log( "D", [idx, allFlows[idx]])
         
         /* if no flowId was provided, take the first one we have found */
         if (!flowId) { flowId = Object.keys(uniqFlowIds)[0] }
