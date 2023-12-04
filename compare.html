@@ -837,9 +837,12 @@ function copyTextToClipboard(text, cb) {
             }
         });
 
+
+        console.log( "D", [idx, allFlows[idx]])
+        
         /* if no flowId was provided, take the first one we have found */
         if (!flowId) { flowId = Object.keys(uniqFlowIds)[0] }
-        if (!flowId) { flowId = allFlows[idx].flowdata[0].z || allFlows[idx].flowdat[1].z || allFlows[idx].flowdat[2].z}
+        if (!flowId) { flowId = allFlows[idx].flowdata[0].z || allFlows[idx].flowdata[1].z || allFlows[idx].flowdata[2].z}
 
         renderFlowIdForIdx(flowId, idx);
 
@@ -947,26 +950,21 @@ function copyTextToClipboard(text, cb) {
 
         setupSvg();
     } else if (params.has('flowhubpr')) {
-      $.get("https://raw.githubusercontent.com/gorenje/flows.flowhub.org/"+params.get('flowhubpr')+"/"+params.get('flowhubpr')+"/flows.json?cb=" + escape(new Date())).then( (chgdata) => { 
 
-        var flowdataChange = JSON.parse(chgdata);
-
-        $.get("https://raw.githubusercontent.com/gorenje/flows.flowhub.org/main/"+params.get('flowhubpr')+"/flows.json?cb=" + escape(new Date())).then( (curdata) => {
-          var flowdataCurrent = JSON.parse(curdata);
-
+      let showDiffFlowhubPr = (change,current) => {
           $('body').html( $('#template').html() )
 
           allFlows = [{
             sha: "change",
-            flowdata: flowdataChange
+            flowdata: (change.length == 0 ? [{z: "noflow"}] : change)
           },{
             sha: "current",
-            flowdata: flowdataCurrent
+            flowdata: (change.length == 0 ? [{z: "noflow"}] : current)
           }];
 
           releasesMetaData = {
             "change": {
-              "sha": "change",
+              "sha": (current.length == 0 ? (change.length == 0 ? "error" : "new") : "change"),
               "message": "change",
               "committer": {
                 "name": "",
@@ -974,7 +972,7 @@ function copyTextToClipboard(text, cb) {
               }
             },
             "current": {
-              "sha": "current",
+              "sha": (current.length == 0 ? (change.length == 0 ? "error" : "empty") : "current"),
               "message": "current",
               "committer": {
                 "name": "",
@@ -984,7 +982,19 @@ function copyTextToClipboard(text, cb) {
           }
 
           setupSvg();
+      };
+
+      $.get("https://raw.githubusercontent.com/gorenje/flows.flowhub.org/"+params.get('flowhubpr')+"/"+params.get('flowhubpr')+"/flows.json?cb=" + escape(new Date())).then( (chgdata) => { 
+        var flowdataChange = JSON.parse(chgdata);
+
+        $.get("https://raw.githubusercontent.com/gorenje/flows.flowhub.org/main/"+params.get('flowhubpr')+"/flows.json?cb=" + escape(new Date())).then( (curdata) => {
+          var flowdataCurrent = JSON.parse(curdata);
+          showDiffFlowhubPr(flowdataChange, flowdataCurrent)
+        }).fail( () => {
+          showDiffFlowhubPr(flowdataChange, [])
         })
+      }).fail( () => {
+          showDiffFlowhubPr([], [])
       })
     } else {
       
