@@ -1,0 +1,32 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+div.markdown-body > h1:first-child {
+    display: none;
+}
+
+div.markdown-body > table {
+  max-width: 97%;
+  margin-top: 30px;
+  max-height: 400px;
+  overflow-y: scroll;
+  display: block;
+  border-collapse: unset !important;
+}
+
+div.markdown-body > table thead {
+  position: sticky;
+  position: -webkit-sticky;
+  position: -moz-sticky;
+  position: -ms-sticky;
+  position: -o-sticky;
+  top: 0px;
+}
+
+div.markdown-body > table thead tr {
+  background-color: #fcfcfcd1;
+   -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
