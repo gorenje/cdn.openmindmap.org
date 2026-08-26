@@ -153,10 +153,6 @@ var imgByType = {
     "udp in": "bridge-dash.svg",
     "udp out": "bridge-dash.svg",
 
-    "Contact": "flowhub.svg",
-    "EmptyContact": "flowhub.svg",
-    "Generator": "flowhub.svg",
-
     // "ut-assert-failure": _hshClr("#FFAAAA"),
     "ut-assert-values": "alert.svg",
     // "ut-assert-success": _hshClr('#addb7b'),
@@ -165,7 +161,46 @@ var imgByType = {
 
     // "erlsupervisor": _hshClr('#E9967A'),
     "mermaid-flowchart": "flowhub.svg",
+    "base64": "parser-base64.png",
+
+    "ollama-chat": "arrow-in.svg",
+    "ollama-copy": "arrow-in.svg",
+    "ollama-create": "arrow-in.svg",
+    "ollama-delete": "arrow-in.svg",
+    "ollama-embed": "arrow-in.svg",
+    "ollama-generate": "arrow-in.svg",
+    "ollama-list": "arrow-in.svg",
+    "ollama-pull": "arrow-in.svg",
+    "ollama-push": "arrow-in.svg",
+    "ollama-show": "arrow-in.svg",
+    "ollama-ps": "arrow-in.svg",
+    "ollama-abort": "arrow-in.svg",
  };
+ 
+
+/***
+ * icon value does not exist here, that's attached to the node type definition
+ * that does not exist here. So we have to map the node type to awesome happy character.
+ * 
+ * This mapping can be checked at https://github.com/node-red/node-red/blob/1f38dc899b1d6d24b05369023ef2d83b808cd55d/packages/node_modules/%40node-red/editor-client/src/js/font-awesome.js
+ * 
+ * NOTE: these mappings are using FontAwesome 4.7.0 Unicodes, these do change with versions.
+ */
+var fontawesomeByType = {
+    "Contact": "\uf2bc",
+    "UglifyJS": "\uf066",
+    "MinifyCSS": "\uf0b0",
+    "PkgFile": "\uf016",
+    "NodeDevOps": "\uf120",
+    "NpmPublish": "\uf0d6",
+    "NpmTarBall":  "\uf187",
+    "NodeFactory": "\uf275",
+    "OTPGenerate": "\uf21b",
+    "JsonSchemaValidatorWithDocu": "\uf05d",
+    "tarball": "\uf187",
+    "findvcard": "\uf059"
+};
+
 
 var imageNameToContent = {
 
@@ -249,7 +284,8 @@ var imageNameToContent = {
 
     "mouse.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeCAYAAAAsEj5rAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB98CBBcXKYRGaWIAAAIfSURBVEjHrVY9a1RBFD33bjAhNqYTBW0kpBErawPpjIq4RWyEYG2hiIWdnY3+Aiut/GhiYyeIhb/AJGgQFAtTpFlWCYjnHIvMw3XzXvI2m1vNx50zc7/OHaClSLLtB2WMsUXSkiSRfHgYYAAA29clmeSZJt0cBdh2pwz7h/HKm9qRJ2OD2Z4vpi7vF5SJOn9lZgV0SdKk7bsAEBEXbSeALdtvIuLPoP4uIVmBzktyMdG2RdJlooH1hcFzTaDvCtgLSfNl7bgkD1gxK+lWccPzRjeQXC5gdwaVSJ4eBKxeZPt20e8OO726+ZOkrzUX/Qc4tLci6WN1SRZnV/uzth+3jT5JZOYqgJkskdkVnsxcbwvY6XRgmxExASCaKiVGzNG9S8/2WFQyUbN2VdIvAOuZ2Ss+/l1z8REAc7bnALiR86qELolsSZ9tr5REfkTytaSfA4lu2z8q4ohhQABd25sRcTIiFm1fADATEZOl7PoANgA8i4g1Sd3MXAJwIiK4y+SI6GfmhzJ91YInFw7MhzUpNh7BHijKto+OAhARYVtVPuYwU0TE5REBp2z3M1N1Tn5q+9uIreELydWmzRsl9061LLtzhRPP79nQSXq4hQ7PSR4juW37ZSNr24akqfLK7ySvNdDWFUnbRW+61U9C0lo5sCnpHslFSfclbXmnsbytY5s9fwqSzkra8L/OZJLvq59DK7A635EM29O9Xm/fc38BtSAs2DgLlw8AAAAASUVORK5CYII=",
 
-
+    "parser-base64.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeCAYAAAAsEj5rAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4gIDDy86IGFKRQAAARhJREFUSMfllTGOwjAQRf+gFCxIK05AQ0u1F6BCHICGW3ALOi5AxQGQoF5ttwUNFZyAigYJsR1I6NMYaTBjZ52k4zdxfuLn8cw4Ad5OAgAkMwAT7RnXx/gKYCIif0EqyTrTtCb5WSUwDi0IDEM1UHkv99qPQkNAHxAAkuT8Ma+W2wZOvue91voPkDrSCOxJMeDNB/hpsZTFHoYmx6C1qo9eDHgQTwC+k4EkOy53baPiAwCz3DBJflgJJ3lSvbZT/tHrw5UfIY1FfnV/Aeiq8U+RHH4Zi0zd1kdVVTkrU+WNUZSxi3SZDBSRHoCzsrZq3C+0BRFpGXlcAGgmR0hyb3hrAMOkJFvfxKqOXvHfqIumUYJzE5EL3lN34R2HIkQ6sMYAAAAASUVORK5CYII=",
+    
     "parser-csv.svg": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAsIDAsIDQwLCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMjYuMDAxIDcuMDM0bC0yMiAuMDQzdjQ1Ljk1OGgzMnYtMzZ6bS0xNC44MzggMTRoMi44Mzh2MTUuMDAxaC0zVjI1LjczOGMtMS4wMjcuOTYtMi42MDYgMS4xMTQtNCAxLjU3NFYyNC43NmMuNzM0LS4yNCAxLjUzLS43MDYgMi4zOS0xLjM3My44NjEtLjY3MyAxLjQ1Mi0xLjQ1NyAxLjc3Mi0yLjM1MXptMTUuOTQ4IDBjMS40NDggMCAyLjgyNC4zOTIgMy42NSAxLjE3My44MjguNzggMS4yNCAxLjc1MSAxLjI0IDIuOTEyIDAgLjY2LS4xMiAxLjI5LS4zNiAxLjg5YTcuMTQzIDcuMTQzIDAgMCAxLTEuMDUgMS44NzJjLS4zNC40MzMtLjk1MiAxLjA1Ny0xLjg0IDEuODctLjg4Ni44MTUtMS42ODcgMS4zNTUtMS45MjcgMS42MjItLjIzMy4yNjctLjQyMy40MDgtLjU3LjY2Mmg1Ljc0OHYzSDIxLjk4Yy4xMDctLjk4Ny40MjctMi4xOTIuOTYtMy4wNzIuNTM0LS44ODcgMS44MjUtMi4wNiAzLjQtMy41MjIgMS4yNjctMS4xOCAxLjk3Mi0xLjk4MiAyLjI1OS0yLjQwMi4zODctLjU4LjQwMi0xLjE1NC40MDItMS43MjEgMC0uNjI3LjAwOC0xLjEwOC0uMzMyLTEuNDQxLS4zMzMtLjM0LTEuMDM1LS41MS0xLjYyOS0uNTEtLjU4NyAwLTEuMDUzLjE3OC0xLjQuNTMxLS4zNDcuMzU0LS41NDYgMS4zMTYtLjYgMi4xMzdoLTMuMDM5Yy4xNjctMS41NDguOTI4LTMuMzE1IDEuODA5LTMuOTg5Ljg4LS42NzMgMS45OC0xLjAxMSAzLjMtMS4wMTF6TTE3LjAwMiAzMy4wMzZoM3YxLjkyOGMwIC44MTQtLjA3MyAxLjQ1NS0uMjEzIDEuOTIyLS4xNC40NzMtLjQwNy44OTgtLjggMS4yNzEtLjM4Ny4zNzQtLjg4LjY2Ni0xLjQ4MS44OGwtLjU0OS0xLjE2MWMuNTY3LS4xODcuOTY5LS40NDMgMS4yMS0uNzcuMjQtLjMyNy4zNjctLjUwMy4zOC0xLjA3aC0xLjU0N3oiIGZpbGw9IiNmZmYiIHN0cm9rZT0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIuNjEyIi8+PC9zdmc+Cg==",
 
 
@@ -366,6 +402,7 @@ var imageNameToContent = {
     "flowhub-diff.svg": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIgogICB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIgogICB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgeG1sbnM6c29kaXBvZGk9Imh0dHA6Ly9zb2RpcG9kaS5zb3VyY2Vmb3JnZS5uZXQvRFREL3NvZGlwb2RpLTAuZHRkIgogICB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSIKICAgaW5rc2NhcGU6dmVyc2lvbj0iMS4wICg0MDM1YTRmLCAyMDIwLTA1LTAxKSIKICAgc29kaXBvZGk6ZG9jbmFtZT0icHVsbC5zdmciCiAgIHdpZHRoPSI0MCIKICAgaGVpZ2h0PSI2MCIKICAgdmlld0JveD0iMCAwIDEwLjU4MzMzMiAxNS44NzUiCiAgIHZlcnNpb249IjEuMSIKICAgaWQ9InN2ZzgiPgogIDxtZXRhZGF0YQogICAgIGlkPSJtZXRhZGF0YTE1MDAiPgogICAgPHJkZjpSREY+CiAgICAgIDxjYzpXb3JrCiAgICAgICAgIHJkZjphYm91dD0iIj4KICAgICAgICA8ZGM6Zm9ybWF0PmltYWdlL3N2Zyt4bWw8L2RjOmZvcm1hdD4KICAgICAgICA8ZGM6dHlwZQogICAgICAgICAgIHJkZjpyZXNvdXJjZT0iaHR0cDovL3B1cmwub3JnL2RjL2RjbWl0eXBlL1N0aWxsSW1hZ2UiIC8+CiAgICAgICAgPGRjOnRpdGxlPjwvZGM6dGl0bGU+CiAgICAgIDwvY2M6V29yaz4KICAgIDwvcmRmOlJERj4KICA8L21ldGFkYXRhPgogIDxkZWZzCiAgICAgaWQ9ImRlZnMxNDk4IiAvPgogIDxzb2RpcG9kaTpuYW1lZHZpZXcKICAgICBpbmtzY2FwZTpjdXJyZW50LWxheWVyPSJnOTIwIgogICAgIGlua3NjYXBlOndpbmRvdy1tYXhpbWl6ZWQ9IjAiCiAgICAgaW5rc2NhcGU6d2luZG93LXk9IjEzMiIKICAgICBpbmtzY2FwZTp3aW5kb3cteD0iOTQyIgogICAgIGlua3NjYXBlOmN5PSIzMCIKICAgICBpbmtzY2FwZTpjeD0iMjAiCiAgICAgaW5rc2NhcGU6em9vbT0iMTIuMjUiCiAgICAgaW5rc2NhcGU6cGFnZWNoZWNrZXJib2FyZD0iZmFsc2UiCiAgICAgc2hvd2dyaWQ9ImZhbHNlIgogICAgIGlkPSJuYW1lZHZpZXcxNDk2IgogICAgIGlua3NjYXBlOndpbmRvdy1oZWlnaHQ9IjEyODYiCiAgICAgaW5rc2NhcGU6d2luZG93LXdpZHRoPSIxNTA1IgogICAgIGlua3NjYXBlOnBhZ2VzaGFkb3c9IjIiCiAgICAgaW5rc2NhcGU6cGFnZW9wYWNpdHk9IjEiCiAgICAgZ3VpZGV0b2xlcmFuY2U9IjEwIgogICAgIGdyaWR0b2xlcmFuY2U9IjEwIgogICAgIG9iamVjdHRvbGVyYW5jZT0iMTAiCiAgICAgYm9yZGVyb3BhY2l0eT0iMSIKICAgICBib3JkZXJjb2xvcj0iIzY2NjY2NiIKICAgICBwYWdlY29sb3I9IiM1NGZmZmYiIC8+CiAgPGcKICAgICBpZD0iZzE0OTMiCiAgICAgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTY0LjA2NzMzNywtMTkxLjc1MDI2KSI+CiAgICA8ZwogICAgICAgaWQ9Imc5MjAiCiAgICAgICB0cmFuc2Zvcm09Im1hdHJpeCgwLjA2ODc1NDczLDAsMCwwLjA2ODc1NDczLDYwLjczMzY3OCwxODkuNzYxMTIpIj4KICAgICAgPHBhdGgKICAgICAgICAgc29kaXBvZGk6bm9kZXR5cGVzPSJjY2NzYyIKICAgICAgICAgc3R5bGU9ImRpc3BsYXk6aW5saW5lO2ZpbGw6bm9uZTtzdHJva2U6I2ZlZmZmZjtzdHJva2Utd2lkdGg6MTIuNTAyOTtzdHJva2UtbGluZWNhcDpyb3VuZDtzdHJva2UtbGluZWpvaW46cm91bmQ7c3Ryb2tlLW1pdGVybGltaXQ6NDtzdHJva2UtZGFzaGFycmF5Om5vbmU7c3Ryb2tlLW9wYWNpdHk6MSIKICAgICAgICAgZD0ibSA2OC45NjcwNDMsMTQ0LjE1MzcxIGMgMy43NzE1OSwtOS4zNjAxMSAxLjU0NDE4NSwtMTQuODc4MTEgNC4zMzY2NzQsLTIxLjQ4MDMgbSA2Ny45MjcyNjMsNzQuMjA0NTQgYyAtMTYuNjU5MjYsNS45MjQ3MiAtMC44ODEyMywwLjMyODYgLTE1LjA0ODU1LDUuOTQxNzYgLTQ0LjczMTAyNCwxNy43MjI2MSAtNzcuMzkwMTUsMC40ODM2MSAtNTcuMjE1Mzg3LC01OC42NjYiCiAgICAgICAgIGlkPSJwYXRoMTQ4MC0wIiAvPgogICAgICA8cGF0aAogICAgICAgICBzb2RpcG9kaTpub2RldHlwZXM9ImNzc2MiCiAgICAgICAgIGlkPSJwYXRoMTQ4MCIKICAgICAgICAgZD0ibSAxMTAuMzgwMzMsOTIuNDc0MTcgYyA2LjkyNTIzLC0zLjQzMzM5NCAzLjg0ODM2LC0yLjEwMTA1NiAxNC40NjYyMywtNy4wNDMzNzkgMzcuNTM2NDMsLTE3LjQ3MjE3OCA2OC45NTY2OCwtMS4wNzA0MTkgNTQuMzE0MTUsNTguOTU2MTA5IC0xLjgwNTY4LDcuNDAyMzQgLTEuNTQ0MTgsMTQuODc4MTIgLTQuMzM2NjcsMjEuNDgwMzEiCiAgICAgICAgIHN0eWxlPSJkaXNwbGF5OmlubGluZTtmaWxsOm5vbmU7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlOiNmZWZmZmY7c3Ryb2tlLXdpZHRoOjEyLjUwMjk7c3Ryb2tlLWxpbmVjYXA6cm91bmQ7c3Ryb2tlLWxpbmVqb2luOnJvdW5kO3N0cm9rZS1taXRlcmxpbWl0OjQ7c3Ryb2tlLWRhc2hhcnJheTpub25lO3N0cm9rZS1vcGFjaXR5OjEiIC8+CiAgICAgIDxwYXRoCiAgICAgICAgIGlkPSJwYXRoMTQ4MiIKICAgICAgICAgZD0iTSA3OS44ODU3NjksMTQ3LjE4NjcyIDU2LjYzNDgxNywxMTUuNjU2NTEgOTMuMDI5NTI4LDExMi40OTAwOCBaIgogICAgICAgICBzdHlsZT0iZmlsbDojZmVmZmZmO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTojZmVmZmZmO3N0cm9rZS13aWR0aDozLjAwNDQ5O3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS1saW5lam9pbjpyb3VuZDtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1kYXNoYXJyYXk6bm9uZTtzdHJva2Utb3BhY2l0eToxIiAvPgogICAgICA8cGF0aAogICAgICAgICBpZD0icGF0aDE0ODQiCiAgICAgICAgIHN0eWxlPSJmaWxsOiNmZWZmZmY7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlOiNmZWZmZmY7c3Ryb2tlLXdpZHRoOjIuODQ3NDg7c3Ryb2tlLWxpbmVjYXA6cm91bmQ7c3Ryb2tlLWxpbmVqb2luOnJvdW5kO3N0cm9rZS1taXRlcmxpbWl0OjQ7c3Ryb2tlLWRhc2hhcnJheTpub25lO3N0cm9rZS1vcGFjaXR5OjEiCiAgICAgICAgIGQ9Im0gMTY4LjY0MTk3LDE0NC4xOTE2MSAyNy4xNDE5NSwyNS42NDQ0MSAtMzcuNTkwOTUsNC44OTUxOSB6IiAvPgogICAgICA8ZwogICAgICAgICBpZD0iZzE0OTAiCiAgICAgICAgIHRyYW5zZm9ybT0ibWF0cml4KDEuMjIxODExNywtMS4zMzMxOTgsMS4yNTIwODU1LDEuMzAwMzg5OCwtMjMwLjY2MDYzLDEwNi40MTI3NikiCiAgICAgICAgIHN0eWxlPSJmaWxsOiNmNzY0Mjg7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlOiNmNzY0Mjg7c3Ryb2tlLW9wYWNpdHk6MSI+CiAgICAgICAgPHBhdGgKICAgICAgICAgICBpZD0icGF0aDE0ODYiCiAgICAgICAgICAgc3R5bGU9ImZpbGw6I2Y3NjQyODtmaWxsLW9wYWNpdHk6MTtzdHJva2U6I2Y3NjQyODtzdHJva2Utd2lkdGg6MC41ODk0Njc7c3Ryb2tlLWxpbmVjYXA6c3F1YXJlO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1kYXNoYXJyYXk6bm9uZTtzdHJva2Utb3BhY2l0eToxIgogICAgICAgICAgIGQ9Im0gMTUzLjIzMTI3LDE1Mi45ODQ3NiBoIC05LjUwNTU2IGMgLTUuNmUtNCw0LjkyMDU1IDEuM2UtNCw0LjY2MDE4IDAsOS43MzgzOSBoIDkuMTU3NjUgYyAxLjU1NDU4LDAgMi40MTc2OCwtMS4yNzAyMiAyLjQxNzY4LC0yLjg0ODAzIHYgLTQuMDQyMzMgYyAwLC0xLjU3NzggLTAuNjAyMTcsLTIuODQ4MDMgLTIuMDY5NzcsLTIuODQ4MDMgeiIgLz4KICAgICAgICA8cGF0aAogICAgICAgICAgIGlkPSJwYXRoMTQ4OCIKICAgICAgICAgICBkPSJtIDEzOC40OTk3MiwxNTMuMjAyNTQgYyAwLjAwMSw0LjczMjM0IC0zLjFlLTQsNC40ODE5MyAwLDkuMzY1ODkgbCAtMjYuNjc2MywwLjE4OTU4IGMgLTQuMjE0MzEsLTEuOTE1MjMgLTguMjYwOTksLTIuNDI0NDUgLTE1LjQxNzE1MywtNC42NDE0NiA2LjEzOTY5MywtMy4wMDc4MiAxMC41NDQyODMsLTMuNzc2MiAxNC42OTA1OTMsLTUuNjA2NjcgMTEuMTkwNDcsLTAuMTI1NzYgMTYuNTEzMTgsMC43MjAwNCAyNy40MDI4NiwwLjY5MjY2IHoiCiAgICAgICAgICAgc3R5bGU9ImZpbGw6I2Y3NjQyODtmaWxsLW9wYWNpdHk6MTtzdHJva2U6I2Y3NjQyODtzdHJva2Utd2lkdGg6MC44OTY4MjI7c3Ryb2tlLWxpbmVjYXA6c3F1YXJlO3N0cm9rZS1saW5lam9pbjptaXRlcjtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1kYXNoYXJyYXk6bm9uZTtzdHJva2Utb3BhY2l0eToxIiAvPgogICAgICA8L2c+CiAgICA8L2c+CiAgPC9nPgo8L3N2Zz4K",
 
 };
+
 
 var _hshClr = (fill, stroke) => {
     return {
@@ -521,6 +558,7 @@ var clrByType = {
 
     "AutoAlign": _hshClr("#DDD7A0"),
     "UglifyJS": _hshClr("#D7D7A0"),
+    "MinifyCSS": _hshClr("#D7D7A0"),
 
     "aedes broker": _hshClr("rgb(216, 191, 216)"),
 
@@ -551,6 +589,7 @@ var clrByType = {
     "Yaml2Flow": _hshClr('#e5e4ef'),
 
     "Contact": _hshClr('#e5e4ef'),
+    "findvcard": _hshClr('#e5e4ef'),
     "EmptyContact": _hshClr('#E9967A'),
     "Generator": _hshClr('#e5e4ef'),
 
@@ -569,8 +608,22 @@ var clrByType = {
 
     "mermaid-flowchart": _hshClr("#C7E9C0"),
 
+    "ollama-chat": _hshClr("rgb(186, 230, 253)"),
+    "ollama-copy": _hshClr("rgb(186, 230, 253)"),
+    "ollama-create": _hshClr("rgb(186, 230, 253)"),
+    "ollama-delete": _hshClr("rgb(186, 230, 253)"),
+    "ollama-embed": _hshClr("rgb(186, 230, 253)"),
+    "ollama-generate": _hshClr("rgb(186, 230, 253)"),
+    "ollama-list": _hshClr("rgb(186, 230, 253)"),
+    "ollama-pull": _hshClr("rgb(186, 230, 253)"),
+    "ollama-push": _hshClr("rgb(186, 230, 253)"),
+    "ollama-show": _hshClr("rgb(186, 230, 253)"),
+    "ollama-ps": _hshClr("rgb(186, 230, 253)"),
+    "ollama-abort": _hshClr("rgb(186, 230, 253)"),    
+
     "_default": _hshClr("rgb(243, 181, 103)")
 };
+
 
 /**
  * Taken from view.js --> https://github.com/node-red/node-red/blob/7e9042e9f713eec981adeb8ff6af226a40efb5af/packages/node_modules/%40node-red/editor-client/src/js/ui/view.js#L931
@@ -660,6 +713,7 @@ function generateLinkPath(origX, origY, destX, destY, sc) {
             destX + " " + destY
     }
 }
+
 
 function getNode(n, v) {
     var elm = document.createElementNS("http://www.w3.org/2000/svg", n);
@@ -818,6 +872,7 @@ function calculateTextDimensions(str, className) {
     textDimensionCache[className][cacheKey] = [w, h];
     return textDimensionCache[className][cacheKey];
 }
+
 
 function createGroupWithClass(cls) {
     var grp = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -1003,7 +1058,6 @@ function replaceCodeBlocksWithNodeRedFlowImages() {
 };
 
 
-
 var mindMapNodeLabelFunct = (obj,subflowObj,flowdata) => {
     return (obj.name || obj.label || obj.info || obj.text || "").replace(/(.{40,60})([ \n\t])/g, "$1\\n$2") + 
              (obj.sumPass ? " ⭄" : "") + 
@@ -1098,8 +1152,8 @@ var labelByFunct = {
     "csv":           undefined,
     "debug":         undefined,
     "exec":          undefined,
-    "file":          (obj, _sub, _flow) => { return (obj.name || obj.filename || obj.type) },
-    "file in":       (obj, _sub, _flow) => { return (obj.name || obj.filename || obj.type) },
+    "file":          (obj, _sub, _flow) => { return (obj.name || (obj.filenameType != "jsonata" && obj.filename) || "write file") },
+    "file in":       (obj, _sub, _flow) => { return (obj.name || (obj.filenameType != "jsonata" && obj.filename) || "read file") },
     "function":      undefined,
     "html":          undefined,
     "http response": (obj, _sub, _flow) => { return ( obj.name || ("http" + (obj.statusCode ? " (" + obj.statusCode +")" : ""))) },
@@ -1189,6 +1243,7 @@ var labelByFunct = {
 
     "_default": defaultLabelFunct,
 };
+
 
 //
 // Zoom Code taken from:
@@ -1362,6 +1417,7 @@ function defineZoomOnFlow(svgImage, svgContainer, svgLocation) {
    svgImage.onpointerleave = pointerupHandler;
 }
 
+
 function renderFlow(flowId, flowdata, svgjQueryObj, renderOpts = {
     "arrows": false,
     "gridlines": true,
@@ -1388,6 +1444,32 @@ function renderFlow(flowId, flowdata, svgjQueryObj, renderOpts = {
         ry: 3
     }
 
+    let checkforFA = () => {
+        function css(element, property) {
+            return window.getComputedStyle(element, null).getPropertyValue(property);
+        }
+
+        var span = document.createElement('span');
+        var yesOrNo = false;
+
+        span.className = 'fa';
+        span.style.display = 'none';
+        document.body.insertBefore(span, document.body.firstChild);
+
+        let fontFamily = `${css(span, 'font-family')}` || ""
+
+        // yes, the value is really in quotes if it contains a space.
+        if (fontFamily.startsWith('FontAwesome') || fontFamily.startsWith("Font Awesome") || fontFamily.startsWith("\"Font Awesome") || fontFamily.startsWith("\"FontAwesome") ) {
+            yesOrNo = true
+        } else {
+            yesOrNo = false
+        }
+
+        document.body.removeChild(span);
+        return yesOrNo;
+    };
+    const faFontInstalled = checkforFA();
+    
     svgObj = $(svgjQueryObj.find('.flowGridlines')[0]);
 
     if (renderOpts["gridlines"]) {
@@ -1800,11 +1882,21 @@ function renderFlow(flowId, flowdata, svgjQueryObj, renderOpts = {
                             height: 30
                         };
 
-                        if (imgByType[obj.type] && imageNameToContent[imgByType[obj.type]]) {
-                            $(grpObj).append(getNode('image', {
-                                "href": imageNameToContent[imgByType[obj.type]],
-                                ...imgBaseOpts
-                            }));
+                        if (faFontInstalled && fontawesomeByType[obj.type]) {
+                            let faIconElem =  getNode('text', {
+                                "class": "svg-fa-icon",
+                                "x": 8,
+                                "y": 21.5,
+                                width: 30,
+                                height: 30
+                            });
+                            faIconElem.textContent = fontawesomeByType[obj.type]
+                            $(grpObj).append(faIconElem)
+                         } else if (imgByType[obj.type] && imageNameToContent[imgByType[obj.type]]) {
+                             $(grpObj).append(getNode('image', {
+                                 "href": imageNameToContent[imgByType[obj.type]],
+                                 ...imgBaseOpts
+                             }));                        
                         } else {
                             if (obj.type.startsWith("subflow:")) {
                                 var hrefContent = (subflowObj.icon &&
